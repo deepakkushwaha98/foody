@@ -3,6 +3,7 @@ import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom"; 
 import axios from "axios";
 import {serverUrl} from "../../App";
+import { ClipLoader } from "react-spinners";
 const Forgetpasswordd = () => {
 
   const primaryColor = "#ff4d2d";
@@ -17,10 +18,12 @@ const Forgetpasswordd = () => {
     const [otp , setOtp] = useState("");
     const [step , setStep] = useState(1);  
     const [email , setEmail] = useState("");
+    const [loading , setLoading] = useState(false)
     
-  
+    const [err , setErr] = useState("")
 
     const handleSendOtp =async () =>{
+      setLoading(true);
       try{
 
         const result = await axios.post(`${serverUrl}/api/auth/send-otp` , {email},
@@ -30,12 +33,16 @@ const Forgetpasswordd = () => {
 
         console.log(result);
         setStep(2);
+        setErr("")
+        setLoading(false);
         
         
 
       }
       catch(err){
         console.error('sendOtp error:', err.response?.data || err.message)
+        setErr(err.response.data.message)
+        setLoading(false);
 
       }
 
@@ -43,6 +50,7 @@ const Forgetpasswordd = () => {
 
     
      const handleVerify = async() =>{
+      setLoading(true);
       try{
 
         const result = await axios.post(`${serverUrl}/api/auth/verify-otp` , {email ,otp},
@@ -52,13 +60,16 @@ const Forgetpasswordd = () => {
 
         console.log(result);
         setStep(3);
+        setErr("")
+        setLoading(false);
         
         
 
       }
       catch(err){
         console.error('verifyOtp error:', err.response?.data || err.message)
-
+        setErr(err?.response.data.message)
+        setLoading(false);
       }
 
     }
@@ -66,6 +77,7 @@ const Forgetpasswordd = () => {
 
 
      const handlerResetPassword =async () =>{
+      setLoading(true);
         if(newPassword != confirmPassword){
           return null;
         }
@@ -79,13 +91,15 @@ const Forgetpasswordd = () => {
         console.log(result);
         setStep(3);
         navigate("/signin")
+        setLoading(false);
         
         
 
       }
       catch(err){
         console.error('resetPassword error:', err.response?.data || err.message)
-
+        setErr(err?.response.data.message) 
+        setLoading(false);
       }
 
     }
@@ -111,6 +125,7 @@ const Forgetpasswordd = () => {
             <input
               type="email"
               value={email}
+              required
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               className="w-full pt-4 border rounded-lg px-3 py-2 focus:outline-none focus:border-orange-500"
@@ -119,9 +134,10 @@ const Forgetpasswordd = () => {
           </div>
            
            
-          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handleSendOtp} >
-             Send otp
+          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handleSendOtp} disabled = {loading} >
+             {loading?<ClipLoader size={20}/> : "Send Otp" }
             </button>
+             <p className='text-red-500 text-center m-10'>{err}</p>
 
 
             </div>
@@ -145,9 +161,10 @@ const Forgetpasswordd = () => {
           </div>
            
            
-          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handleVerify} >
-             Verify
+          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handleVerify} disabled = {loading} >
+             {loading?<ClipLoader size={20}/> : "Verify" }
             </button>
+             <p className='text-red-500 text-center m-10'>{err}</p>
 
 
             </div>
@@ -188,9 +205,10 @@ const Forgetpasswordd = () => {
           </div>
            
            
-          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handlerResetPassword}>
-             Reset Password
+          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handlerResetPassword} disabled = {loading}>
+             {loading?<ClipLoader size={20}/> : "Reset Password"}
             </button>
+             <p className='text-red-500 text-center m-10'>{err}</p>
 
 
             </div>
