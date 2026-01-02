@@ -28,13 +28,13 @@ const UserSchema = new mongoose.Schema({
     resetOtp :{
     type :String
     },
-isOtpVerified:{
-    type : Boolean,
-    default : false
+isOtpVerified: {
+    type: Boolean,
+    default: false,
 },
-otmpExpires  :{
-    type : Date
-}
+otpExpiry: {
+    type: Date,
+},
 }
 
 ,{timestamps : true})

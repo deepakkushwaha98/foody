@@ -1,6 +1,8 @@
 import React , {useState}from "react";
 import { IoArrowBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom"; 
+import axios from "axios";
+import {serverUrl} from "../../App";
 const Forgetpasswordd = () => {
 
   const primaryColor = "#ff4d2d";
@@ -10,11 +12,87 @@ const Forgetpasswordd = () => {
     
     const navigate = useNavigate();
 
-    const [newPassword , setNewPassword] = useState("");
+     const [newPassword , setNewPassword] = useState("");
     const [confirmPassword , setConfirmPassword] = useState("");
     const [otp , setOtp] = useState("");
     const [step , setStep] = useState(1);  
     const [email , setEmail] = useState("");
+    
+  
+
+    const handleSendOtp =async () =>{
+      try{
+
+        const result = await axios.post(`${serverUrl}/api/auth/send-otp` , {email},
+        { withCredentials: true }
+
+        )
+
+        console.log(result);
+        setStep(2);
+        
+        
+
+      }
+      catch(err){
+        console.error('sendOtp error:', err.response?.data || err.message)
+
+      }
+
+    }
+
+    
+     const handleVerify = async() =>{
+      try{
+
+        const result = await axios.post(`${serverUrl}/api/auth/verify-otp` , {email ,otp},
+          { withCredentials: true }
+
+        )
+
+        console.log(result);
+        setStep(3);
+        
+        
+
+      }
+      catch(err){
+        console.error('verifyOtp error:', err.response?.data || err.message)
+
+      }
+
+    }
+
+
+
+     const handlerResetPassword =async () =>{
+        if(newPassword != confirmPassword){
+          return null;
+        }
+      try{
+
+        const result = await axios.post(`${serverUrl}/api/auth/reset-password` , {email, newPassword},
+       { withCredentials: true }
+
+        )
+
+        console.log(result);
+        setStep(3);
+        navigate("/signin")
+        
+        
+
+      }
+      catch(err){
+        console.error('resetPassword error:', err.response?.data || err.message)
+
+      }
+
+    }
+
+
+
+  
   return (
     <div className="flex w-full items-center justify-center p-4 min-h-screen ">
 
@@ -41,7 +119,7 @@ const Forgetpasswordd = () => {
           </div>
            
            
-          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" >
+          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handleSendOtp} >
              Send otp
             </button>
 
@@ -67,7 +145,7 @@ const Forgetpasswordd = () => {
           </div>
            
            
-          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" >
+          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handleVerify} >
              Verify
             </button>
 
@@ -110,7 +188,7 @@ const Forgetpasswordd = () => {
           </div>
            
            
-          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" >
+          <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handlerResetPassword}>
              Reset Password
             </button>
 

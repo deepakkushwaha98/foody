@@ -60,7 +60,7 @@ const SignIn = () => {
                
              </div>
 
-             <div className='text-right mb-4 text-[#ff4d2d]' onClick={()=> navigate("/forget-password")}>
+             <div className='text-right mb-4 text-[#ff4d2d] cursor-pointer' onClick={()=> navigate("/forget-password")}>
                 forget password?
              </div>
                
