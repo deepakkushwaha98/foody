@@ -29,28 +29,26 @@ const SignUp = () => {
     const [err , setErr] = useState("")
     const [fullName , setFullName] = useState("")
     const [email , setEmail] = useState("")
-    const [mobile , setMobile] = useState()
-    const [password, setPpassword] = useState()
+    const [mobile , setMobile] = useState("")
+    const [password, setPpassword] = useState("")
    const [loading , setLoading] = useState(false)  
     const dispatch = useDispatch()
     const handleSignUp = async () => {
       setLoading(true)
-       try{
-          const result = await axios.post(`${serverUrl}/api/auth/signup` ,{
-            fullName , email , mobile , password , role
-          } , {withCredentials: true}
-        )
-        console.log(result)
-        dispatch(setUserData(result.data))
-        setErr("")
-        setLoading(false)
+      try{
+         const result = await axios.post(`${serverUrl}/api/auth/signup`, {
+           fullName, email, mobile, password, role
+         }, { withCredentials: true })
 
-       }
-       catch(err){
-         setErr(err.response.data.message)
-         
-         setLoading(false);
-       }
+         dispatch(setUserData(result.data))
+         setErr("")
+      }
+      catch(err){
+        setErr(err?.response?.data?.message || err.message)
+      }
+      finally{
+        setLoading(false)
+      }
     }
 
 
@@ -82,6 +80,7 @@ const SignUp = () => {
       }
       catch(err){
         console.log(err);
+        setErr(err?.response?.data?.message || err.message);
       }
       finally{
         setLoadingGoogle(false)
@@ -121,7 +120,7 @@ const SignUp = () => {
                 <label htmlFor="password" className='block text-gray-700 font-medium mb-1'>password</label>
                 <div className='relative'>
                     <input type={showPassword? "text": "password"} value={password} required onChange={(e) => setPpassword(e.target.value)} className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500' placeholder='enter password' style={{ border: `1px solid ${borderColor}` }} />
-                    <button className='absolute right-3 top-[14px] text-gray-500 ' onClick={toggle}>{ showPassword ? <FaEye/> : <FaEyeSlash/>}</button>
+                    <button type="button" className='absolute right-3 top-[14px] text-gray-500 ' onClick={toggle}>{ showPassword ? <FaEye/> : <FaEyeSlash/>}</button>
                </div>
                
              </div>
@@ -131,13 +130,13 @@ const SignUp = () => {
              <div className='mb-4'>
                 <label htmlFor="" className='block text-gray-700 font-medium mb-1'>role</label>
                 <div className='relative flex justify-between gap-2 mx-2 my-2'>
-                    {["user" , "owener" , "deliveryBoy"].map((r)=>(
-                       <button className='flex-1  border rounded-lg px-3 py-2 text-center font-medium transition-colors' 
-                       onClick={()=>setRole(r)}
-                       style={
+                        {["user" , "owner" , "deliveryBoy"].map((r)=>(
+                        <button  type="button" key={r} className='flex-1  border rounded-lg px-3 py-2 text-center font-medium transition-colors' 
+                        onClick={()=>setRole(r)}
+                        style={
                         role == r? {backgroundColor:primaryColor , color:"white"}:{border:`1px solid ${primaryColor}` , color:"#333"}
-                       }>{r}</button>
-                    ))}
+                        }>{r}</button>
+                      ))}
                </div>
                
              </div>

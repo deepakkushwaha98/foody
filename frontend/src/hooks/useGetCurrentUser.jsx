@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { serverUrl } from "../App";
 import { useDispatch } from "react-redux";
@@ -20,13 +20,16 @@ const useGetCurrentUser = () => {
 
         console.log(result)
       } catch (err) {
-        console.log(err)
+        // If there's no authenticated user, backend returns 400 (token missing).
+        // Ignore 400 to avoid noisy logs; surface other errors.
+        if (err?.response?.status === 400) return;
+        console.error(err);
     };
 
    
  }
  fetchUser()
-}, []);
+}, [dispatch]);
 
 };
 

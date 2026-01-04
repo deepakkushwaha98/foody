@@ -7,9 +7,12 @@ import { useSelector } from "react-redux";
 export const serverUrl = "http://localhost:3000"
 import Home from "./assets/pages/Home.jsx"
 import useGetCity from "./hooks/UseGetCity.jsx";
+import useGetMyShop from "./hooks/UseGetMyShop.jsx";
+import CreatEditShop from "./assets/pages/CreatEditShop.jsx";
 function App() {
   useGetCurrentUser()
   useGetCity()
+  useGetMyShop()
 
   const {userData} = useSelector(state =>state.user)
   return (
@@ -18,7 +21,7 @@ function App() {
       <Route path='/signin' element={!userData?<SignIn/> : <Navigate to={"/"}/>}/>
       <Route path='/forget-password' element={!userData?<Forgetpasswordd/> : <Navigate to={"/"}/>} />
       <Route path="/" element={userData?<Home/> :<Navigate to={"/signin"}/>} />
-
+      <Route path="/creat-edit-shop" element={userData?<CreatEditShop/> :<Navigate to={"/signin"}/>} />  
         
       
     </Routes>
