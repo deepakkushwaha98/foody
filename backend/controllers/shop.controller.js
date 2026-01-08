@@ -1,5 +1,5 @@
 import Shop from "../models/shop.model.js";
-import uloadOnCloudinary from "../utils/cloudinary.js";
+import uploadOnCloudinary from "../utils/cloudinary.js";
 
 
 export const createEditShop = async (req,res) =>{
@@ -7,7 +7,7 @@ export const createEditShop = async (req,res) =>{
         const {name , city , state , address} = req.body
         let image ;
         if(req.file){
-            image = await uloadOnCloudinary(req.file.path)
+            image = await uploadOnCloudinary(req.file.path)
         }
         console.log(req.file);
         
@@ -20,13 +20,13 @@ export const createEditShop = async (req,res) =>{
 
         }
         else{
-                        shop = await Shop.findByIdAndUpdate(shop._id,{
-                        name , city , state , address, image , owner:req.userId
+                shop = await Shop.findByIdAndUpdate(shop._id,{
+                name , city , state , address, image , owner:req.userId
 
                 },{new:true}
                     )
         }
-        await shop.populate("owner")
+        await shop.populate("owner items")
         return res.status(201).json(shop)
 
 
@@ -40,7 +40,7 @@ export const createEditShop = async (req,res) =>{
 
 export const getMyShop = async(req, res) =>{
     try{
-        const shop = await Shop.find({owner:req.userId})
+        const shop = await Shop.find({owner:req.userId}).populate("items owner")
         // ensure we always send a JSON response; convert null/undefined to []
         if(!shop || (Array.isArray(shop) && shop.length === 0)){
             return res.status(200).json([])

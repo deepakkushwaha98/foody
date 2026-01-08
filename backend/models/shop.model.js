@@ -30,7 +30,7 @@ const shopSchema = mongoose.Schema({
     },
     items:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:Item
+        ref:"Item"
 
     }]
 

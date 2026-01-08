@@ -9,6 +9,8 @@ import Home from "./assets/pages/Home.jsx"
 import useGetCity from "./hooks/UseGetCity.jsx";
 import useGetMyShop from "./hooks/UseGetMyShop.jsx";
 import CreatEditShop from "./assets/pages/CreatEditShop.jsx";
+import AddItems from "./assets/pages/AddItems.jsx";
+import EditItem from "./assets/pages/EditItem.jsx";
 function App() {
   useGetCurrentUser()
   useGetCity()
@@ -22,8 +24,8 @@ function App() {
       <Route path='/forget-password' element={!userData?<Forgetpasswordd/> : <Navigate to={"/"}/>} />
       <Route path="/" element={userData?<Home/> :<Navigate to={"/signin"}/>} />
       <Route path="/creat-edit-shop" element={userData?<CreatEditShop/> :<Navigate to={"/signin"}/>} />  
-        
-      
+      <Route path="/add-item" element={userData?<AddItems/> :<Navigate to={"/signin"}/>} />   
+      <Route path="/edit-item/:itemId" element={userData?<EditItem/> :<Navigate to={"/signin"}/>} /> 
     </Routes>
   );
 }
