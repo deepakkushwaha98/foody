@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaUtensils } from "react-icons/fa";
 import { useRef } from 'react';
+import { ClipLoader } from 'react-spinners';
 import axios from 'axios';
 
 import { serverUrl } from '../../App';
@@ -15,6 +16,7 @@ const AddItems = () => {
 
     const {myShopData} = useSelector(state=>state.owner)
      const [name , setName] = useState("")
+     const [loading , setLoading] = useState(false)
 
      const [price , setPrice] = useState(0);
      const [category , setCategory] = useState("")
@@ -36,6 +38,7 @@ const AddItems = () => {
     const [backendImage , setBackendImage] = useState(null)
     
     const handleSubmit = async (e) => {
+        setLoading(true)
         e.preventDefault()
         try{
             const formData = new FormData()
@@ -51,9 +54,13 @@ const AddItems = () => {
             const result = await axios.post(`${serverUrl}/api/item/add-item`, formData, { withCredentials: true })
             dispatch(setMyShopData(result.data))
             console.log(result.data)
+            setLoading(false)
+            navigate("/")
+
         }
         catch(err){
             console.log(err)
+            setLoading(false)
 
         }
     }
@@ -131,8 +138,8 @@ const AddItems = () => {
                 </div>
 
                <button type='submit' className='w-full bg-[#ff4d2d] text-white px-6 py-3 rounded-lg font-semibold
-               shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 cursor-pointer '>
-                Save
+               shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 cursor-pointer ' disabled = {loading} >
+                 {loading ? <ClipLoader size={20} color='white' /> :"save"}
                </button>
                
 

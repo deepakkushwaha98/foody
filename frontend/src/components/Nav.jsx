@@ -12,6 +12,7 @@ import { FaPlus } from "react-icons/fa";
 import { setUserData } from '../redux/userSlice';
 import { setMyShopData } from '../redux/ownerSlice';
 import { LuReceipt } from "react-icons/lu";
+import { useNavigate } from 'react-router-dom';
 
 
 const Nav = () => {
@@ -20,7 +21,7 @@ const Nav = () => {
    const [showSearch , setShowSearch] = useState(false);
    const dispatch = useDispatch()
   const {myShopData} = useSelector(state =>state.owner)
-  
+  const navigate = useNavigate()
    const handleLogOut = async() =>{
      try{
         const result = await axios.get(`${serverUrl}/api/auth/signout` ,
@@ -103,23 +104,30 @@ const Nav = () => {
   </>
 )}
          
-       {userData.role =="owner" ? <>
-        
-        {myShopData && <> <button type='button' className='hidden md:flex items-center p-2 gap-1 bg-[#ddafa7] rounded-full text-[#ff4d2d]'>
-             <FaPlus size={25} className='text-[#ff4d2d] ' />
-             <span className='text-[#ff4d2d]'>Add Food Item  </span>
-           </button>
+      {userData.role === "owner" ? (
+        <>
+          {myShopData && (
+            <>
+              <button
+                type="button"
+                className="hidden md:flex items-center p-2 gap-1 bg-[#ddafa7] rounded-full text-[#ff4d2d]"
+                onClick={() => navigate("/add-item")}
+              >
+                <FaPlus size={25} className="text-[#ff4d2d]" />
+                <span>Add Food Item</span>
+              </button>
 
-            <button type='button' className='md:hidden flex items-center bg-[#ddafa7] rounded-full text-[#ff4d2d]'>
-             <FaPlus size={25} className='text-[#ff4d2d] ' />
-             
-           </button>
-           </>
-        }
-        
+              <button
+                type="button"
+                className="md:hidden flex items-center p-2 bg-[#ddafa7] rounded-full text-[#ff4d2d]"
+                onClick={() => navigate("/add-item")}
+              >
+                <FaPlus size={25} className="text-[#ff4d2d]" />
+              </button>
+            </>
+          )}
 
-           
-           <div className='hidden md:flex  items-center gap-2 cursor-pointer relative px-3 py-1
+          <div className='hidden md:flex  items-center gap-2 cursor-pointer relative px-3 py-1
            rounded-lg bg-[#ff4d2d]/10 font-medium ' >
             <LuReceipt size={20} />
             <span className=''>My Order</span>
@@ -136,23 +144,18 @@ const Nav = () => {
             bg-[#ff4d2d] rounded-full px-[6px] py-[1px]'>0</span>
 
            </div>
-       </>: (
-            <>
-             <div className="relative cursor-pointer">
-             <IoCartOutline size={26} className="text-[#ff4d3d]" />
-       <span className="absolute -top-2 -right-2 text-xs text-[#ff4d3d]">
-        0
-          </span>
-      </div>     
-           <button className="hidden md:block px-3 py-1 rounded-lg
-          bg-[#ff4d2d]/10 text-[#ff4d2d] text-sm">
-          My orders
-        </button>
-           </>
-       )
-       
-       
-       }  
+        </>
+      ) : (
+        <>
+          <div className="relative cursor-pointer">
+            <IoCartOutline size={26} className="text-[#ff4d3d]" />
+            <span className="absolute -top-2 -right-2 text-xs text-[#ff4d3d]">0</span>
+          </div>
+          <button className="hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#ff4d2d] text-sm">
+            My orders
+          </button>
+        </>
+      )}
 
        
 

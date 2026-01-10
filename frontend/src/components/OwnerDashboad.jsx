@@ -11,7 +11,7 @@ const OwnerDashboad = () => {
 
   const myShopData = useSelector(state => state.owner?.myShopData)
   return (
-    <div className='w-full min-h-screen bg-[#fff9f6] flex flex-col items-center pb-11'>
+    <div className='w-full min-h-screen bg-[#fff9f6] flex flex-col items-center  pb-11'>
        <Nav/>
 
        {!myShopData && <div className='flex justify-center items-center p-4  sm:p-6'>
@@ -32,7 +32,7 @@ const OwnerDashboad = () => {
 
 
        {myShopData && 
-       <div className='w-full  flex flex-col items-center gap-6 sm:px-6'>
+       <div className='w-full   flex flex-col items-center gap-6 sm:px-6'>
         <h1 className='text-2xl sm:text-3xl text-gray-900 flex items-center gap-3 mt-4  '>
            <FaUtensils className='text-[#ff4d2d] w-14 h-14 sm:w-20 sm:h-20 mb-4 ' />Welcome to {myShopData.name}</h1>
 
@@ -72,7 +72,9 @@ const OwnerDashboad = () => {
 
            </div>
 
-            {myShopData.items?.length > 0 && <div className='p-4 sm:p-6 w-full'>
+            {myShopData.items?.length > 0 && <div className='p-4 sm:p-6 w-full 
+                  flex flex-col 
+                  gap-6 place-items-center'>
            {myShopData.items.map((item, index) => (
              <OwnerItemCard data={item} key={index} />
             ))}

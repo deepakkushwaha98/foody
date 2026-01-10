@@ -3,17 +3,19 @@ import axios from "axios";
 import { serverUrl } from "../App";
 import { useDispatch, useSelector } from "react-redux";
 import { setMyShopData } from "../redux/ownerSlice";
+import { setShopInMyCity } from "../redux/userSlice";
+import { setItemInMyCity } from "../redux/userSlice";
+const UseGetItemByCity = () => {
 
-const useGetMyShop = () => {
+  const {currentCity} = useSelector(state=>state.user)  
 
   const dispatch = useDispatch()
-  const {userData} = useSelector(state =>state.user)
  
   useEffect(() => {
-    const fetchShop = async () => {
+    const fetchItems = async () => {
       try {
         const result = await axios.get(
-          `${serverUrl}/api/shop/get-my`,
+          `${serverUrl}/api/item/get-by-city/${currentCity}`,
           { withCredentials: true }
         );
 
@@ -23,9 +25,10 @@ const useGetMyShop = () => {
           ? result.data[0]
           : null;
 
-        dispatch(setMyShopData(payload));
+        dispatch(setItemInMyCity(result.data));
+        console.log("by city", result.data)
 
-        console.log('get-my shop', result.data)
+        console.log('get-my shop-items', result.data)
       } catch (err) {
        
         if (err?.response?.status === 400) return;
@@ -34,10 +37,11 @@ const useGetMyShop = () => {
 
    
  }
- fetchShop()
-}, [dispatch]);
+ fetchItems()
+}, [currentCity]);
 
 };
 
 
-export default useGetMyShop;
+
+export default UseGetItemByCity

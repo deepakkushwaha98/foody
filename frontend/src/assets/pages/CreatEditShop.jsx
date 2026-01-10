@@ -8,10 +8,13 @@ import axios from 'axios';
 
 import { serverUrl } from '../../App';
 import { setMyShopData } from '../../redux/ownerSlice';
+import { ClipLoader } from 'react-spinners';
 const CreatEditShop = () => {
     const navigate = useNavigate()
     
    const dispatch = useDispatch()
+
+    const [loading , setLoading] = useState(false)
 
     const {myShopData} = useSelector(state=>state.owner)
     const {currentCity , currentState , currentAddress} = useSelector(state => state.user)
@@ -23,6 +26,7 @@ const CreatEditShop = () => {
     const [backendImage , setBackendImage] = useState(null)
     
     const handleSubmit = async (e) => {
+        setLoading(true);
         e.preventDefault()
         try{
             const formData = new FormData()
@@ -37,9 +41,12 @@ const CreatEditShop = () => {
             const result = await axios.post(`${serverUrl}/api/shop/create-edit`, formData, { withCredentials: true })
             dispatch(setMyShopData(result.data))
             console.log(result.data)
+            setLoading(false)
+            navigate("/")
         }
         catch(err){
             console.log(err)
+            setLoading(false)
 
         }
     }
@@ -106,8 +113,9 @@ const CreatEditShop = () => {
                 </div>
                
                <button type='submit' className='w-full bg-[#ff4d2d] text-white px-6 py-3 rounded-lg font-semibold
-               shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 cursor-pointer '>
-                Save
+               shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 cursor-pointer ' disabled={loading} >
+                 {loading ? <ClipLoader size={20} color='white' /> :"save"}
+                               
                </button>
                
 

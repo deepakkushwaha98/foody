@@ -9,8 +9,11 @@ import axios from 'axios';
 
 import { serverUrl } from '../../App';
 import { setMyShopData } from '../../redux/ownerSlice';
+import { ClipLoader } from 'react-spinners';
 const EditItem = () => {
     const navigate = useNavigate()
+
+    const [loading , setLoading] = useState(false)
     
    const dispatch = useDispatch()
     const [currentItem , setCurrentItem] = useState(null)
@@ -37,6 +40,7 @@ const EditItem = () => {
     const [backendImage , setBackendImage] = useState(null)
     
     const handleSubmit = async (e) => {
+        setLoading(true);
         e.preventDefault()
         try{
             const formData = new FormData()
@@ -52,9 +56,12 @@ const EditItem = () => {
             const result = await axios.put(`${serverUrl}/api/item/edit-item/${itemId}`, formData, { withCredentials: true })
             console.log('edit item result', result.data)
             navigate('/')
+            setLoading(false);
+            navigate("/");
         }
         catch(err){
             console.log(err)
+            setLoading(false)
 
         }
     }
@@ -93,7 +100,7 @@ const EditItem = () => {
     }
 
   return (
-    <div className='flex justify-center flex-col items-center p-6 bg-gradient-to-br
+    <div className='flex  justify-center flex-col items-center p-6 bg-gradient-to-br
     from-orange-50 relative to-white min-h-screen '>
         <div className='absolute top-[20px] left-[20px] mb-[10px] ' onClick={()=>navigate("/")}>
             <IoMdArrowBack size={35} className='text-[#ff4d2d] ' />
@@ -159,8 +166,9 @@ const EditItem = () => {
                 </div>
 
                <button type='submit' className='w-full bg-[#ff4d2d] text-white px-6 py-3 rounded-lg font-semibold
-               shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 cursor-pointer '>
-                Save
+               shadow-md hover:bg-orange-600 hover:shadow-lg transition-all duration-200 cursor-pointer ' disabled ={loading} >
+                {loading ? <ClipLoader size={20} color='white' /> :"save"}
+               
                </button>
                
 

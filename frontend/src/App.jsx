@@ -11,11 +11,14 @@ import useGetMyShop from "./hooks/UseGetMyShop.jsx";
 import CreatEditShop from "./assets/pages/CreatEditShop.jsx";
 import AddItems from "./assets/pages/AddItems.jsx";
 import EditItem from "./assets/pages/EditItem.jsx";
+import UseGetShopByCity from "./hooks/UseGetShopByCity.jsx";
+import UseGetItemByCIty from "./hooks/UseGetItemByCity.jsx";
 function App() {
   useGetCurrentUser()
   useGetCity()
   useGetMyShop()
-
+  UseGetShopByCity()
+  UseGetItemByCIty()
   const {userData} = useSelector(state =>state.user)
   return (
     <Routes>
