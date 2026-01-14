@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 const Nav = () => {
-  const { userData ,currentCity } = useSelector(state => state.user)
+  const { userData ,currentCity ,cartItems} = useSelector(state => state.user)
    const [show , setShow] = useState(false);
    const [showSearch , setShowSearch] = useState(false);
    const dispatch = useDispatch()
@@ -141,15 +141,15 @@ const Nav = () => {
             <LuReceipt size={20} />
             
             <span className='absolute -right-2 -top-2 text-xs font-bold text-white
-            bg-[#ff4d2d] rounded-full px-[6px] py-[1px]'>0</span>
+            bg-[#ff4d2d] rounded-full px-[6px] py-[1px]'>{cartItems.lenght}</span>
 
            </div>
         </>
       ) : (
         <>
-          <div className="relative cursor-pointer">
+          <div className="relative cursor-pointer" onClick={()=> navigate("/cart")} >
             <IoCartOutline size={26} className="text-[#ff4d3d]" />
-            <span className="absolute -top-2 -right-2 text-xs text-[#ff4d3d]">0</span>
+            <span className="absolute -top-2 -right-2 text-xs text-[#ff4d3d]">{cartItems.lenght}</span>
           </div>
           <button className="hidden md:block px-3 py-1 rounded-lg bg-[#ff4d2d]/10 text-[#ff4d2d] text-sm">
             My orders
