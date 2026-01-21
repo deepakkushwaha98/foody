@@ -135,11 +135,12 @@ export const deleteItem = async(req , res)=> {
 export const getItemByCity = async(req , res)=>{
     try{
         const {city} = req.params
+        const searchCity = city.replace(/^New\s+/i, '');
         if(!city){
             return res.status(400).json({message: "city is required"})
         }
          const shops = await Shop.find({
-            city:{$regex:new RegExp(`^${city}$` ,"i")}
+            city:{$regex:new RegExp(searchCity ,"i")}
         }).populate('items')
 
          if(!shops){
@@ -158,5 +159,16 @@ export const getItemByCity = async(req , res)=>{
          return res.status(500).json({message : ` shop item error ${err}`})
 
 
+    }
+}
+
+
+
+export const getAllItems = async(req, res) => {
+    try {
+        const items = await Item.find({}).populate('shop');
+        return res.status(200).json(items);
+    } catch (err) {
+        return res.status(500).json({message: `get all items err ${err}`});
     }
 }

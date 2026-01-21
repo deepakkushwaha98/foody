@@ -9,7 +9,7 @@ import { RxCross1 } from "react-icons/rx";
 import { serverUrl } from '../App';
 import  axios  from 'axios';
 import { FaPlus } from "react-icons/fa";
-import { setUserData } from '../redux/userSlice';
+import { setUserData , setCurrentCity} from '../redux/userSlice';
 import { setMyShopData } from '../redux/ownerSlice';
 import { LuReceipt } from "react-icons/lu";
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +19,8 @@ const Nav = () => {
   const { userData ,currentCity ,cartItems} = useSelector(state => state.user)
    const [show , setShow] = useState(false);
    const [showSearch , setShowSearch] = useState(false);
+   const [editCity, setEditCity] = useState(false);
+   const [cityInput, setCityInput] = useState('');
    const dispatch = useDispatch()
   const {myShopData} = useSelector(state =>state.owner)
   const navigate = useNavigate()
@@ -51,7 +53,39 @@ const Nav = () => {
       {showSearch && userData.role== "user" &&  <div className="md:flex w-[70%] h-[60px] bg-white
         shadow-xl rounded-lg items-center gap-[20px] flex fixed top-[80px] left-[15%] " > <div className="flex items-center w-[30%] gap-2 px-3 border-r">
           <FaLocationDot size={22} className="text-[#ff4d2d]" />
-          <span className="text-gray-400 truncate">{currentCity}</span>
+          {editCity ? (
+            <input
+              type="text"
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              onBlur={() => {
+                if (cityInput.trim()) {
+                  dispatch(setCurrentCity(cityInput.trim()));
+                }
+                setEditCity(false);
+                setCityInput('');
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  if (cityInput.trim()) {
+                    dispatch(setCurrentCity(cityInput.trim()));
+                  }
+                  setEditCity(false);
+                  setCityInput('');
+                }
+              }}
+              className="outline-none text-gray-700 bg-transparent"
+              placeholder="Enter city"
+              autoFocus
+            />
+          ) : (
+            <span className="text-gray-400 truncate cursor-pointer" onClick={() => {
+              setEditCity(true);
+              setCityInput(currentCity || '');
+            }}>
+              {currentCity || 'Select City'}
+            </span>
+          )}
         </div>
          <div className="flex items-center w-full gap-2 px-3">
           <IoMdSearch size={22} className="text-[#ff4d2d]" />
@@ -69,7 +103,39 @@ const Nav = () => {
 
         <div className="flex items-center w-[30%] gap-2 px-3 border-r">
           <FaLocationDot size={22} className="text-[#ff4d2d]" />
-          <span className="text-gray-400 font-semibold truncate">{currentCity}</span>
+          {editCity ? (
+            <input
+              type="text"
+              value={cityInput}
+              onChange={(e) => setCityInput(e.target.value)}
+              onBlur={() => {
+                if (cityInput.trim()) {
+                  dispatch(setCurrentCity(cityInput.trim()));
+                }
+                setEditCity(false);
+                setCityInput('');
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  if (cityInput.trim()) {
+                    dispatch(setCurrentCity(cityInput.trim()));
+                  }
+                  setEditCity(false);
+                  setCityInput('');
+                }
+              }}
+              className="outline-none text-gray-700 bg-transparent"
+              placeholder="Enter city"
+              autoFocus
+            />
+          ) : (
+            <span className="text-gray-400 truncate cursor-pointer" onClick={() => {
+              setEditCity(true);
+              setCityInput(currentCity || '');
+            }}>
+              {currentCity || 'Select City'}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center w-full gap-2 px-3">

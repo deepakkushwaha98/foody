@@ -12,27 +12,24 @@ const UseGetItemByCity = () => {
   const dispatch = useDispatch()
  
   useEffect(() => {
+    console.log('UseGetItemByCity currentCity:', currentCity);
+    if(!currentCity) return;
     const fetchItems = async () => {
       try {
+        console.log('fetching items for city:', currentCity);
         const result = await axios.get(
           `${serverUrl}/api/item/get-by-city/${currentCity}`,
           { withCredentials: true }
         );
 
-        // API returns an array (possibly empty). Convert empty array to null
-        // so UI checks like `!myShopData` work as expected.
-        const payload = Array.isArray(result.data) && result.data.length > 0
-          ? result.data[0]
-          : null;
-
         dispatch(setItemInMyCity(result.data));
-        console.log("by city", result.data)
+        console.log('get-by-city items status:', result.status);
+        console.log('get-by-city items body:', result.data);
 
-        console.log('get-my shop-items', result.data)
       } catch (err) {
        
         if (err?.response?.status === 400) return;
-        console.error(err);
+        console.error('get-by-city items error:', err);
     };
 
    

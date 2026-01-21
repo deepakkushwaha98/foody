@@ -12,17 +12,17 @@ const Userdashboard = () => {
    
   const {currentCity , shopInMyCity , itemsInMyCity} = useSelector(state => state.user)
   const [showLeftCateButton , setShowLeftCateButton] = useState(false)
-  const [showRightCateButton , setShowRighCateButtom] = useState(false)
+  const [showRightCateButton , setShowRightCateButton] = useState(false)
    const [showLeftShopButton , setShowLeftShopButton] = useState(false)
-  const [showRightShopButton , setShowRighShopButtom] = useState(false)
+  const [showRightShopButton , setShowRightShopButton] = useState(false)
 
 
   
-  const updateButton = (ref , setLeftButton , setRighButtom)=>{
+  const updateButton = (ref , setLeftButton , setRightButton)=>{
     const element = ref.current
     if(element){
       setLeftButton(element.scrollLeft>0)
-      setRighButtom(element.scrollLeft + element.clientWidth < element.scrollWidth )
+      setRightButton(element.scrollLeft + element.clientWidth < element.scrollWidth )
       console.log("left" ,element.scrollLeft)
       console.log("scrollwidth", element.scrollWidth)
       console.log("client" , element.clientWidth)
@@ -33,19 +33,20 @@ const Userdashboard = () => {
 
   useEffect(()=>{
     const element = cateScrollRef.current
-    const onScroll = ()=> updateButton(cateScrollRef , setShowLeftCateButton , setShowRighCateButtom)
+    const shopElement = shopScrollRef.current
+    const onScroll = ()=> updateButton(cateScrollRef , setShowLeftCateButton , setShowRightCateButton)
 
     if(element){
-      updateButton(cateScrollRef , setShowLeftCateButton , setShowRighCateButtom)
+      updateButton(cateScrollRef , setShowLeftCateButton , setShowRightCateButton)
       element.addEventListener('scroll', onScroll)
-      shopScrollRef.current.addEventListener('scroll' ,()=> {
-        updateButton(shopScrollRef , setShowLeftShopButton , setShowRighShopButtom)})
+      if(shopElement) shopElement.addEventListener('scroll' ,()=> {
+        updateButton(shopScrollRef , setShowLeftShopButton , setShowRightShopButton)})
     }
 
     return ()=>{
       if(element) element.removeEventListener('scroll', onScroll)
-      if(shopScrollRef.current)  { shopScrollRef.current.removeEventListener('scroll', ()=>{
-        updateButton(shopScrollRef , setShowLeftShopButton , setShowRighShopButtom)
+      if(shopElement)  { shopElement.removeEventListener('scroll', ()=>{
+        updateButton(shopScrollRef , setShowLeftShopButton , setShowRightShopButton)
       }
       )}
     }
@@ -103,10 +104,10 @@ const Userdashboard = () => {
 
              </button> }
              <div className='w-full flex items-center px-12 overflow-x-auto gap-4 pb-2 ' ref={shopScrollRef}>
-               {shopInMyCity.map((shop , idx)=>(
+               {shopInMyCity && shopInMyCity.length > 0 && shopInMyCity.map((shop, idx) => (
               <CategoryCard name={shop.name} image={shop.image} key={idx}  />
               
-           ) )}
+           ))}
              </div>
 
              {showRightShopButton && <button className='absolute right-0 top-1/2 -translate-y-1/2 bg-[#ff4d2d] text-white p-2
@@ -124,7 +125,7 @@ const Userdashboard = () => {
             <h1 className='text-gray-800 text-2xl items-start  sm:text-3xl'> Suggested Food Items</h1>
 
             <div className='w-full h-auto flex flex-wrap gap-[20px] justify-center'>
-              {itemsInMyCity?.map((item , idx)=>(
+              {itemsInMyCity && itemsInMyCity.length > 0 && itemsInMyCity.map((item , idx)=>(
                 <FoodCard key={idx} data={item} />
               ))}
 

@@ -40,10 +40,12 @@ export const createEditShop = async (req,res) =>{
 
 export const getMyShop = async(req, res) =>{
     try{
+        console.log('getMyShop called for user:', req.userId)
         const shop = await Shop.find({owner:req.userId}).populate("owner").populate({
             path:"items",
             options:{sort:{updateAt:-1}}
          })
+        console.log('getMyShop result count:', Array.isArray(shop)? shop.length : 0)
         // ensure we always send a JSON response; convert null/undefined to []
         if(!shop || (Array.isArray(shop) && shop.length === 0)){
             return res.status(200).json([])
@@ -62,9 +64,10 @@ export const getMyShop = async(req, res) =>{
 export const getShopByCity = async(req , res)=>{
     try{
         const {city} = req.params
+        const searchCity = city.replace(/^New\s+/i, '');
 
         const shops = await Shop.find({
-            city:{$regex:new RegExp(`^${city}$` ,"i")}
+            city:{$regex:new RegExp(searchCity ,"i")}
         }).populate('items')
 
         if(!shops){
@@ -78,6 +81,15 @@ export const getShopByCity = async(req , res)=>{
 
         return res.status(500).json({message: `get by shop city err ${err}`})
 
+    }
+}
+
+export const getAllShops = async(req, res) => {
+    try {
+        const shops = await Shop.find({}).populate('items').populate('owner');
+        return res.status(200).json(shops);
+    } catch (err) {
+        return res.status(500).json({message: `get all shops err ${err}`});
     }
 }
 
