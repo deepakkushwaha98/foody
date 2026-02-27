@@ -7,12 +7,13 @@ import { TbCurrentLocation, TbLockCancel } from "react-icons/tb";
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { useDispatch, useSelector } from 'react-redux';
 import "leaflet/dist/leaflet.css";
-import { setShopInMyCity } from '../../redux/userSlice';
+import { addMyOrder, setShopInMyCity } from '../../redux/userSlice';
 import { setAddress, setLocation } from '../../redux/mapSlice';
 import axios from 'axios';
 import { MdDeliveryDining } from "react-icons/md";
 import { FaMobileScreenButton } from "react-icons/fa6";
 import { FaCreditCard } from "react-icons/fa6";
+import { serverUrl } from '../../App';
 
 function RecenterMap({ location }) {
   const map = useMap();
@@ -82,6 +83,29 @@ const getCurrentLocaton = async()=>{
       }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 });
 
 
+}
+
+
+const handlePlaceOrder = async () => {
+  try{
+    const result = await axios.post(`${serverUrl}/api/order/place-order` ,{
+      paymentMethod,
+    deliveryAddress:{
+    text:addressInput,
+    latitude:location.lat,
+    longitude:location.lon
+    },
+    totalAmount,
+    cartItems
+    },{withCredentials:true})
+    dispatch(addMyOrder(result.data))
+    navigate("/order-placed")
+    
+  }
+  catch(err){
+    console.log(err)
+
+  }
 }
 
 
@@ -259,7 +283,7 @@ useEffect(()=>{
               </div>
             </section>
             <button className=' rounded-xl bg-[#ff4d2d] w-full hover:bg-[#e64526] text-white py-3 transition-colors  cursor-pointer
-            font-semibold '>{paymentMethod=="cod"?"Place Order": "Pay & Place Order"}</button>
+            font-semibold ' onClick={handlePlaceOrder}>{paymentMethod=="cod"?"Place Order": "Pay & Place Order"}</button>
          </div>
         
       

@@ -15,12 +15,19 @@ import UseGetShopByCity from "./hooks/UseGetShopByCity.jsx";
 import UseGetItemByCIty from "./hooks/UseGetItemByCity.jsx";
 import CartPage from "./assets/pages/CartPage.jsx";
 import CheckOut from "./assets/pages/CheckOut.jsx";
+import OrderPlaced from "./assets/pages/orderPlaced.jsx";
+import MyOrders from "./assets/pages/MyOrders.jsx";
+import useGetMyOrder from "./hooks/UseGetMyOrder.jsx";
+import useUpdateLocation from "./hooks/useUpdateLocation.jsx";
+import TrackOrderPage from "./components/TrackOrderPage.jsx";
 function App() {
   useGetCurrentUser()
   useGetCity()
   useGetMyShop()
   UseGetShopByCity()
   UseGetItemByCIty()
+  useGetMyOrder()
+  useUpdateLocation()
   const {userData} = useSelector(state =>state.user)
   return (
     <Routes>
@@ -33,7 +40,9 @@ function App() {
       <Route path="/edit-item/:itemId" element={userData?<EditItem/> :<Navigate to={"/signin"}/>} /> 
       <Route path="/cart" element={userData?<CartPage/> :<Navigate to={"/signin"}/>} /> 
        <Route path="/checkout" element={userData?<CheckOut/> :<Navigate to={"/signin"}/>} /> 
-    
+        <Route path="/order-placed" element={userData?<OrderPlaced/> :<Navigate to={"/signin"}/>} /> 
+        <Route path="/my-orders" element={userData?<MyOrders/> :<Navigate to={"/signin"}/>} /> 
+      <Route path="/track-order/:orderId" element={userData?<TrackOrderPage/> :<Navigate to={"/signin"}/>} />
     </Routes>
   );
 }
