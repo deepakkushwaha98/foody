@@ -9,10 +9,11 @@ import { RxCross1 } from "react-icons/rx";
 import { serverUrl } from '../App';
 import  axios  from 'axios';
 import { FaPlus } from "react-icons/fa";
-import { setUserData , setCurrentCity} from '../redux/userSlice';
+import { setUserData , setCurrentCity, setSearchItems } from '../redux/userSlice';
 import { setMyShopData } from '../redux/ownerSlice';
 import { LuReceipt } from "react-icons/lu";
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 
 const Nav = () => {
@@ -24,6 +25,7 @@ const Nav = () => {
    const dispatch = useDispatch()
   const {myShopData} = useSelector(state =>state.owner)
   const navigate = useNavigate()
+  const [query, setQuery] = useState('')
    const handleLogOut = async() =>{
      try{
         const result = await axios.get(`${serverUrl}/api/auth/signout` ,
@@ -37,6 +39,31 @@ const Nav = () => {
 
      }
    }
+
+    const handleSearchItem = async()=>{
+       try{
+         const result = await axios.get(`${serverUrl}/api/item/search-items?query=${query}&city=${currentCity}` , {withCredentials:true}) 
+       console.log(result.data)
+       dispatch(setSearchItems(result.data))
+      
+       }
+       catch(err){
+         console.log(err)
+       }
+   
+     }
+
+
+     useEffect(()=>{
+      if(query){
+        handleSearchItem()
+      }
+      else{
+          dispatch(setSearchItems(null))
+      }
+      
+     }, [query])
+   
 
 
   return (
@@ -92,8 +119,7 @@ const Nav = () => {
           <input
             type="text"
             placeholder="search delicious food..."
-            className="outline-none w-full text-gray-700"
-          />
+            className="outline-none w-full text-gray-700"  onChange={(e)=> setQuery(e.target.value)} value={query} />
         </div>
         </div>}
 
@@ -139,7 +165,7 @@ const Nav = () => {
         </div>
 
         <div className="flex items-center w-full gap-2 px-3">
-          <IoMdSearch size={22} className="text-[#ff4d2d]" />
+          <IoMdSearch size={22} className="text-[#ff4d2d]" onChange={(e)=> setQuery(e.target.value)} value={query} />
           <input
             type="text"
             placeholder="search delicious food..."

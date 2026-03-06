@@ -1,22 +1,40 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Nav from './Nav'
+import { useNavigate } from 'react-router-dom'
 import { Categories } from '../category'
 import CategoryCard from './CategoryCard'
 import { FaAnglesLeft } from "react-icons/fa6";
 import { FaAnglesRight } from "react-icons/fa6";
 import { useSelector } from 'react-redux';
 import FoodCard from './FoodCard';
+import { serverUrl } from '../App'
 const Userdashboard = () => {
   const cateScrollRef = useRef()
+  const navigate = useNavigate()
   const shopScrollRef = useRef()
    
-  const {currentCity , shopInMyCity , itemsInMyCity} = useSelector(state => state.user)
+  const {currentCity , shopInMyCity , itemsInMyCity , searchItems} = useSelector(state => state.user)
   const [showLeftCateButton , setShowLeftCateButton] = useState(false)
   const [showRightCateButton , setShowRightCateButton] = useState(false)
-   const [showLeftShopButton , setShowLeftShopButton] = useState(false)
+  const [updatedItemList , setUpdatedItemList] = useState(itemsInMyCity || [])
+  const [showLeftShopButton , setShowLeftShopButton] = useState(false)
   const [showRightShopButton , setShowRightShopButton] = useState(false)
+  
+  useEffect(()=>{
+    if(itemsInMyCity && itemsInMyCity.length > 0){
+      setUpdatedItemList(itemsInMyCity)
+    }
+  }, [itemsInMyCity])
 
-
+  const handleFilterByCategory = (category)=>{
+    if(category === "all"){
+      setUpdatedItemList(itemsInMyCity)
+    }
+    else{
+      const filtered = itemsInMyCity?.filter(i=> i.category === category)
+      setUpdatedItemList(filtered)
+    }
+  }
   
   const updateButton = (ref , setLeftButton , setRightButton)=>{
     const element = ref.current
@@ -62,10 +80,22 @@ const Userdashboard = () => {
      }
   }
 
+ 
 
   return (
      <div>
          <Nav/>
+
+         {searchItems && searchItems.length > 0 && (
+          <div className='w-full max-w-6xl flex flex-col gap-5 items-start p-5 bg-white shadow-md rounded-2xl mt-4'>
+            <h1 className='text-gray-900 text-2xl  sm:text-3xl font-semibold border-b border-gray-200 pb-2 '>Search Result</h1>
+             <div className='w-full auto flex flex-wrap gap-6 justify-center'>
+              {searchItems.map((item)=>(
+                <FoodCard key={item._id} data={item} />
+              ))}
+             </div>
+          </div>
+         )}
 
          <div className='w-full max-w-6xl flex flex-col  gap-5 px-12 items-center p-[10px] '>
            <h1 className='text-gray-800 text-2xl items-start  sm:text-3xl'>Inspiration for you first order</h1>
@@ -78,7 +108,7 @@ const Userdashboard = () => {
              </button> }
              <div className='w-full flex items-center px-12 overflow-x-auto gap-4 pb-2 ' ref={cateScrollRef}>
                {Categories.map((cate , idx)=>(
-              <CategoryCard name={cate.category} image={cate.image} key={idx}  />
+              <CategoryCard name={cate.category} image={cate.image} key={idx} onClick={()=>handleFilterByCategory(cate.category)} />
               
            ) )}
              </div>
@@ -105,7 +135,7 @@ const Userdashboard = () => {
              </button> }
              <div className='w-full flex items-center px-12 overflow-x-auto gap-4 pb-2 ' ref={shopScrollRef}>
                {shopInMyCity && shopInMyCity.length > 0 && shopInMyCity.map((shop, idx) => (
-              <CategoryCard name={shop.name} image={shop.image} key={idx}  />
+              <CategoryCard name={shop.name} image={shop.image} key={idx} onClick={()=>navigate(`/shop/${shop._id}`)} />
               
            ))}
              </div>
@@ -125,7 +155,7 @@ const Userdashboard = () => {
             <h1 className='text-gray-800 text-2xl items-start  sm:text-3xl'> Suggested Food Items</h1>
 
             <div className='w-full h-auto flex flex-wrap gap-[20px] justify-center'>
-              {itemsInMyCity && itemsInMyCity.length > 0 && itemsInMyCity.map((item , idx)=>(
+              {updatedItemList && updatedItemList.length > 0 && updatedItemList.map((item , idx)=>(
                 <FoodCard key={idx} data={item} />
               ))}
 

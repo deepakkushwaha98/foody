@@ -1,13 +1,43 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { IoMdArrowBack } from "react-icons/io";
-import { useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
 import UserOrderCard from '../../components/UserOrderCard';
 import OwnerOrderCard from '../../components/OwnerOrderCard';
+import { useDispatch } from 'react-redux';
+import { setMyOrders } from '../../redux/userSlice';
+import { updateRealTimeOrderStatus } from '../../redux/userSlice';
 
 const MyOrders = () => {
-  const {userData , myOrders} = useSelector(state=>state.user)
+  const {userData , myOrders , socket} = useSelector(state=>state.user)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
+   
+  useEffect(()=>{
+    socket?.on('newOrder' , (data)=>{
+      if(data?.shopOrders?.owner && String(data.shopOrders.owner._id) === String(userData?._id)){
+        dispatch(setMyOrders([data,...myOrders]))
+      }
+    })
+
+    
+  socket?.on('update-status' , (statusData)=>{
+    if(String(statusData?.userId) === String(userData?._id)){
+      dispatch(updateRealTimeOrderStatus({
+        orderId: statusData.orderId,
+        shopId: statusData.shopId,
+        status: statusData.status
+      }))
+    }
+  })
+
+    return ()=>{
+      socket?.off("newOrder")
+      socket?.off("update-status")
+    }
+  },[socket, userData, myOrders, dispatch])
+
+
 
   return (
     <div className='w-gull min-h-screen bg-[#fff9f6] flex justify-center px-4'>

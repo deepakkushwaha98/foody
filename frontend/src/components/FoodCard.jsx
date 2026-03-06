@@ -9,7 +9,8 @@ import {useDispatch, useSelector} from "react-redux"
 import { FaCartPlus } from "react-icons/fa";
 import { addToCart } from '../redux/userSlice';
 const FoodCard = ({ data }) => {
-  const { name, image, price } = data || {}
+  if (!data) return null;
+  const { name, image, price } = data
   const dispatch = useDispatch();
   const {cartItems} = useSelector(state =>state.user)
   const [quantity , setQuantity] = useState(0)

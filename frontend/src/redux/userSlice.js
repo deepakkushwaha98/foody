@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit"
 
+
 const userSlice = createSlice({
     name:"user",
     initialState:{
@@ -11,7 +12,9 @@ const userSlice = createSlice({
         itemsInMyCity:null,
         cartItems:[],
         totalAmount:0,
-        myOrders:null
+        myOrders:null,
+        searchItems:null
+
 
     },
     reducers:{
@@ -91,12 +94,29 @@ const userSlice = createSlice({
                order.shopOrders.status=status
             }
          }
+        },
+
+        updateRealTimeOrderStatus:(state , action)=>{
+         const {orderId,shopId,status} = action.payload
+         const order = state.myOrders.find(o=>o._id==orderId)
+         if(order){
+            const shopOrder = order.shopOrders.find(so=>so.shop._id==shopId)
+            if(shopOrder){
+               shopOrder.status=status
+            }
+         }
+        },
+
+        
+        setSearchItems:(state , action)=>{
+         state.searchItems=action.payload
         }
+
 
 
 
     }
 })
 
-export const {setUserData, updateOrderStatus ,setMyOrders,addMyOrder , setCurrentCity, removeCartItem , setCurrentState , setCurrentAddress , setShopInMyCity , setItemInMyCity, updateQuantity ,addToCart} = userSlice.actions
+export const {setUserData,updateRealTimeOrderStatus, updateOrderStatus ,setSearchItems,setMyOrders,addMyOrder , setCurrentCity, removeCartItem , setCurrentState , setCurrentAddress , setShopInMyCity , setItemInMyCity, updateQuantity ,addToCart} = userSlice.actions
 export default userSlice.reducer

@@ -12,7 +12,6 @@ const UserSchema = new mongoose.Schema({
     },
     password :{
         type : String,
-        
     },
     mobile : {
         type : String,
@@ -34,6 +33,15 @@ isOtpVerified: {
 },
 otpExpiry: {
     type: Date,
+},
+
+socketId:{
+    type:String,
+    
+},
+isOnline:{
+    type:Boolean,
+    default:false
 },
 
 location:{

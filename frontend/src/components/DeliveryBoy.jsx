@@ -7,10 +7,13 @@ import { useEffect ,useState} from 'react'
 import { FaAssistiveListeningSystems } from 'react-icons/fa'
 import useGetCurrentUser from '../hooks/useGetCurrentUser'
 import DeliveryBoyTracking from './DeliveryBoyTracking'
+import { useSocket } from '../context/SocketContext'
 
 const DeliveryBoy = () => {
+  const [otp , setOtp] = useState("")
   const [shopOtpBox , setShopOtpBox] = useState(false);
   const { userData } = useSelector(state => state.user)
+  const { socket } = useSocket()
   const [currentOrder , setCurrentOrder] = useState();
   const [availableAssignment, setAvailableAssignment] = useState(null)
   const getAssignment = async()=>{
@@ -49,9 +52,7 @@ const DeliveryBoy = () => {
 
  },[userData])
  
-  const handleSendOtp = (e)=>{
-    setShopOtpBox(true);
-  }
+  
 
 
  const acceptOrder = async(assignmentId)=>{
@@ -64,6 +65,56 @@ const DeliveryBoy = () => {
     console.log(err);
   }
  }
+
+
+  const sendOtp = async()=>{
+  try{
+    const result = await axios.post(`${serverUrl}/api/order/send-delivery-otp`, {
+      orderId: currentOrder?._id,
+      shopOrderId: currentOrder?.shopOrder?._id
+    }, {withCredentials:true});
+    console.log(result.data);
+    setShopOtpBox(true);
+  }
+  catch(err){
+    console.log(err);
+  }
+ }
+
+
+ const verifyOtp = async()=>{
+  try{
+    const result = await axios.post(`${serverUrl}/api/order/verify-delivery-otp` , {orderId: currentOrder?._id, shopOrderId: currentOrder?.shopOrderId, otp} ,{withCredentials:true})
+    console.log(result.data)
+    
+  }
+  catch(err){
+    console.log(err);
+  }
+ }
+
+
+
+ useEffect(()=>{
+
+  socket?.on("newAssignment" , (data)=>{
+    console.log("New assignment received:", data);
+    if(data.sentTO === userData?._id || String(data.sentTO) === String(userData?._id)){
+      console.log("Assignment is for this delivery boy, adding to available");
+      setAvailableAssignment(prev => prev ? [...prev, data] : [data])
+    }
+  })
+  
+   return ()=>{
+    socket?.off("newAssignment")
+   }
+
+
+ }, [socket, userData])
+
+
+
+
 
 
   return (
@@ -155,11 +206,11 @@ const DeliveryBoy = () => {
           </div>
 
           <DeliveryBoyTracking  data={currentOrder} />
-          {!shopOtpBox ?<button className='mt-4 bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 active:scale-95 transition-all duration-200 ' onClick={handleSendOtp}>
+          {!shopOtpBox ?<button className='mt-4 bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 active:scale-95 transition-all duration-200 ' onClick={sendOtp}>
             Mark as Delivered</button>: <div className='mt-4 p-4 border rounded-xl bg-gray-50'>
               <p>Enter Otp send to <span className='text-orange-500'>{currentOrder.user.fullName}</span>  </p>
-              <input type="text" className='w-full border px-3 py-2 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-orange-400 '/>
-              <button className='w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 active:scale-95 transition-all duration-200 ' >Submit OTP</button>
+              <input type="text" className='w-full border px-3 py-2 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-orange-400 ' placeholder='Enter Otp' value={otp} onChange={(e)=>setOtp(e.target.value)}/>
+              <button className='w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 active:scale-95 transition-all duration-200 ' onClick={verifyOtp}>Submit OTP</button>
            </div>
            }
         </div> }
