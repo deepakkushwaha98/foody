@@ -8,6 +8,7 @@ import userRouter from "./routes/user.routes.js";
 import shopRouter from "./routes/shop.routes.js";
 import itemRouter from "./routes/item.routes.js";
 import orderRouter from "./routes/order.routes.js";
+import adminRouter from "./routes/admin.routes.js";
 import http, { Server } from "http"
 import { Server as SocketServer } from "socket.io"
 import { socketHandler } from "./socket.js";

@@ -12,7 +12,7 @@ const userSlice = createSlice({
         itemsInMyCity:null,
         cartItems:[],
         totalAmount:0,
-        myOrders:null,
+        myOrders:[],
         searchItems:null
 
 
@@ -97,6 +97,7 @@ const userSlice = createSlice({
         },
 
         updateRealTimeOrderStatus:(state , action)=>{
+         if (!Array.isArray(state.myOrders)) return
          const {orderId,shopId,status} = action.payload
          const order = state.myOrders.find(o=>o._id==orderId)
          if(order){

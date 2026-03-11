@@ -20,6 +20,36 @@ export const socketHandler = (io) => {
             }
         })
 
+
+        socket.on("updatelocation" , async ({userId, location})=>{
+            try{
+               const user = await User.findByIdAndUpdate(userId , {
+                    location:{
+                        type:"Point",
+                        coordinates:[location.longitude , location.latitude]
+                    },
+                    isOnline:true,
+                    socketId:socket.id
+
+                })
+
+                if(user){
+                    io.emit("updateDriverLocation", {
+                    deliveryBoyId: user._id,
+                    latitude: location.latitude,
+                    longitude: location.longitude
+                })
+
+                }
+
+                
+
+            }
+            catch(err){
+                console.log("❌ SOCKET UPDATE LOCATION ERROR 👉" , err)
+            }
+        })
+
         // Handle disconnect at connection level
         socket.on("disconnect" , async ()=>{
             try{
@@ -36,3 +66,5 @@ export const socketHandler = (io) => {
         })
     })
 }
+
+  

@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import { serverUrl } from '../App'
+import { useSocket } from '../context/SocketContext'
+
 import { IoMdArrowBack } from "react-icons/io";
 import { useNavigate } from 'react-router-dom'
 import DeliveryBoyTracking from './DeliveryBoyTracking'
 const TrackOrderPage = () => {
   const navigate = useNavigate()
   const {orderId} = useParams()
+  const { socket } = useSocket()
   const [currentOrder , setCurrentOrder] = useState()
+  const [liveLocation , setLiveLocation] = useState({})
   const handleGetOrder = async()=>{
     try {
       const result = await axios.get(`${serverUrl}/api/order/get-order-by-id/${orderId}` , {withCredentials:true})
@@ -23,6 +27,29 @@ const TrackOrderPage = () => {
     }
     
   }
+   
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleLocationUpdate = ({ deliveryBoyId, latitude, longitude }) => {
+      setLiveLocation(prev => ({
+        ...prev,
+        [deliveryBoyId]: {
+          lat: latitude,
+          lon: longitude
+        }
+      }))
+    }
+
+    socket.on("updateDriverLocation", handleLocationUpdate)
+
+    return () => {
+      socket.off("updateDriverLocation", handleLocationUpdate)
+    }
+  }, [socket])
+
+
 
   useEffect(() => {
     handleGetOrder()
@@ -57,7 +84,8 @@ const TrackOrderPage = () => {
           <p className='text-green-600 font-semibold text-lg'>Delivered</p> }
              {shopOrder.assignedDeliveryBoy && shopOrder.status != "delivered" && (() => {
                 const trackingData = {
-                  deliveryBoyLocation: {
+                  deliveryBoyLocation: liveLocation[shopOrder.assignedDeliveryBoy._id] || {
+                    
                     lat: shopOrder.assignedDeliveryBoy.location?.coordinates?.[1] ?? null,
                     lon: shopOrder.assignedDeliveryBoy.location?.coordinates?.[0] ?? null
                   },

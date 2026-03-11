@@ -63,6 +63,7 @@ const OwnerOrderCard = ({data}) => {
           <option value="pending">Pending</option>
           <option value="preparing">Preparing</option>
           <option value="out of delivery">Out Of Delivery</option>
+          <option value="delivered">Delivered</option>
         </select>
       </div>
 

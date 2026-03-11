@@ -60,7 +60,7 @@ const Shop = () => {
             {items && items.length > 0 ? (
                 <div className='flex flex-wrap justify-center gap-6'>
                     {items.map((item) => (
-                        <FoodCard  data={item} />
+                        <FoodCard key={item._id || item.id} data={item} />
                         
                     ))}
                 </div>
