@@ -11,7 +11,8 @@ itemRouter.put("/edit-item/:itemId", isAuth, upload.single("image"), editItem)
 
 itemRouter.get("/get-by-id/:itemId", isAuth, getItemByID)
 itemRouter.get("/delete/:itemid" , isAuth , deleteItem)
-itemRouter.get("/get-by-city/:city" , isAuth , getItemByCity)
+// Allow unauthenticated users to browse items by city
+itemRouter.get("/get-by-city/:city" , getItemByCity)
 itemRouter.get("/get-by-shop/:shopId" , isAuth , getItemsByShop)
 itemRouter.get("/all" , getAllItems) // debug
 itemRouter.get("/search-items" , isAuth,searchItems)

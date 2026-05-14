@@ -1,11 +1,8 @@
 import React from 'react'
+import AdminDashboard from './admin/AdminDashboard'
 
 const SuperAdmin = () => {
-  return (
-    <div>
-      
-    </div>
-  )
+  return <AdminDashboard />
 }
 
 export default SuperAdmin

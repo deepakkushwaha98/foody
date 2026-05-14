@@ -63,24 +63,25 @@ export const getMyShop = async(req, res) =>{
 
 export const getShopByCity = async(req , res)=>{
     try{
-        const {city} = req.params
-        const searchCity = city.replace(/^New\s+/i, '');
-
-        const shops = await Shop.find({
-            city:{$regex:new RegExp(searchCity ,"i")}
-        }).populate('items')
-
-        if(!shops){
-            return res.status(400).json({message: "no shop found in your city"})
+        const cityParam = String(req.params.city || "").trim();
+        if (!cityParam) {
+            return res.status(400).json({ message: "city is required" });
         }
 
-        return res.status(200).json(shops)
+        const searchCity = cityParam.replace(/^New\s+/i, '');
+
+        const shops = await Shop.find({
+            city: { $regex: new RegExp(searchCity, "i") }
+        }).populate('items');
+
+        // If no shops found, return an empty array rather than an error.
+        return res.status(200).json(shops);
 
     }
     catch(err){
-
+        // eslint-disable-next-line no-console
+        console.error('getShopByCity error:', err)
         return res.status(500).json({message: `get by shop city err ${err}`})
-
     }
 }
 

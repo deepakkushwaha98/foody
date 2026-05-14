@@ -64,6 +64,7 @@ app.use("/api/user" ,userRouter)
 app.use("/api/item" ,itemRouter)
 app.use("/api/shop" ,shopRouter)
 app.use("/api/order" , orderRouter)
+app.use("/api/admin" , adminRouter)
 
 socketHandler(io)
 

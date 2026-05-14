@@ -7,25 +7,33 @@ export const signUp = async (req , res) =>{
     try{
         const { fullName, email, password, mobile, role } = req.body;
 
+        // Provide a safe default role if not specified.
+        const normalizedRole = role || "user";
+
+        const allowedRoles = ["user", "owner", "deliveryBoy", "superadmin"];
+        if (!allowedRoles.includes(normalizedRole)) {
+            return res.status(400).json({ message: "Invalid role provided" });
+        }
 
         let user = await User.findOne({email})
 
         if(user) {
-            return res.status(400).json({message:"User Already exist"})
+            return res.status(400).json({message:"User already exists"})
         }
 
-        if (password.length < 6){
-            return res.status(400).json({message: "password should be greater than 6 characters."})
+        if (!password || password.length < 6){
+            return res.status(400).json({message: "Password should be at least 6 characters."})
         }
-        if(mobile.length<10){
-            return res.status(400).json({message: "mobile must be at least 10 digits"})
+        if(!mobile || mobile.length < 10){
+            return res.status(400).json({message: "Mobile must be at least 10 digits"})
         }
+
         const hashedPassword = await bcrypt.hash(password , 10);
 
         user = await User.create({
             fullName,
             email,
-            role,
+            role: normalizedRole,
             mobile,
             password: hashedPassword
         })
@@ -44,7 +52,9 @@ export const signUp = async (req , res) =>{
 
     }
     catch(err){
-        return res.status(500).json(`sign up error ${err}`)
+        console.error("SIGNUP ERROR 👉", err)
+        const message = err?.message || "An unexpected error occurred"
+        return res.status(500).json({ message: message })
 
     }
 }
@@ -83,7 +93,9 @@ export const signIn  = async (req , res) =>{
 
     }
     catch(err){
-        return res.status(500).json(`signIn error ${err}`)
+        console.error("SIGNIN ERROR 👉", err)
+        const message = err?.message || "An unexpected error occurred"
+        return res.status(500).json({ message: message })
 
     }
 }
@@ -226,13 +238,16 @@ export const googleAuth = async (req,res) =>{
     try {
         const { fullName, email, mobile, role } = req.body;
 
+        const safeFullName = fullName || "Google User";
+        const safeMobile = mobile || "0000000000";
+
         let user = await User.findOne({ email });
 
         if (!user) {
             user = await User.create({
-                fullName,
+                fullName: safeFullName,
                 email,
-                mobile: mobile || '',
+                mobile: safeMobile,
                 role: role || 'user',
             });
         }

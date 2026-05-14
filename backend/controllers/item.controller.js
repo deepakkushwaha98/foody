@@ -135,30 +135,28 @@ export const deleteItem = async(req , res)=> {
 export const getItemByCity = async(req , res)=>{
     try{
         const {city} = req.params
-        const searchCity = city.replace(/^New\s+/i, '');
         if(!city){
             return res.status(400).json({message: "city is required"})
         }
-         const shops = await Shop.find({
+
+        const searchCity = String(city).replace(/^New\s+/i, '');
+        const shops = await Shop.find({
             city:{$regex:new RegExp(searchCity ,"i")}
         }).populate('items')
 
-         if(!shops){
-            return res.status(400).json({message: "no shop found in your city"})
+        // Return an empty array (not an error) when no shops exist in that city.
+        if(!Array.isArray(shops) || shops.length === 0){
+            return res.status(200).json([])
         }
 
         const shopIds = shops.map((shop)=>shop._id)
-
         const items = await Item.find({shop:{$in:shopIds}})
         return res.status(200).json(items)
 
-
-
     }
     catch(err){
+         console.error('getItemByCity error:', err)
          return res.status(500).json({message : ` shop item error ${err}`})
-
-
     }
 }
 

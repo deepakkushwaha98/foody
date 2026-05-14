@@ -130,7 +130,7 @@ const SignUp = () => {
              <div className='mb-4'>
                 <label htmlFor="" className='block text-gray-700 font-medium mb-1'>role</label>
                 <div className='relative flex justify-between gap-2 mx-2 my-2'>
-                        {["user" , "owner" , "deliveryBoy"].map((r)=>(
+                        {['user' , 'owner' , 'deliveryBoy'].map((r)=>(
                         <button  type="button" key={r} className='flex-1  border rounded-lg px-3 py-2 text-center font-medium transition-colors' 
                         onClick={()=>setRole(r)}
                         style={
