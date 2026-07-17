@@ -15,7 +15,7 @@ import { socketHandler } from "./socket.js";
 
 
 
-dotenv.config({ path: "./.env" });
+dotenv.config({ path: new URL("./.env", import.meta.url).pathname });
 const app = express()
 
 const server = http.createServer(app)
@@ -68,10 +68,18 @@ app.use("/api/admin" , adminRouter)
 
 socketHandler(io)
 
-server.listen(port , ()=>{
-    connectdb()
-    console.log(`${port}`)
-})
+const startServer = async () => {
+    try {
+        await connectdb();
+        server.listen(port, () => {
+            console.log(`Server running on port ${port}`);
+        });
+    } catch (err) {
+        console.error("Server startup failed:", err);
+        process.exit(1);
+    }
+};
 
+startServer();
 
 export {app}

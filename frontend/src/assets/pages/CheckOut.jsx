@@ -87,24 +87,29 @@ const getCurrentLocaton = async()=>{
 
 
 const handlePlaceOrder = async () => {
-  try{
-    const result = await axios.post(`${serverUrl}/api/order/place-order` ,{
-      paymentMethod,
-    deliveryAddress:{
-    text:addressInput,
-    latitude:location.lat,
-    longitude:location.lon
-    },
-    totalAmount,
-    cartItems
-    },{withCredentials:true})
-    dispatch(addMyOrder(result.data))
-    navigate("/order-placed")
-    
+  // Online payments temporarily unavailable — notify user
+  if (paymentMethod === "online") {
+    alert("UPI and card option not available please go through COD");
+    return;
   }
-  catch(err){
-    console.log(err)
 
+  try {
+    const result = await axios.post(`${serverUrl}/api/order/place-order`, {
+      paymentMethod,
+      deliveryAddress: {
+        text: addressInput,
+        latitude: location.lat,
+        longitude: location.lon,
+      },
+      totalAmount,
+      cartItems,
+    }, { withCredentials: true });
+
+    dispatch(addMyOrder(result.data));
+    navigate("/order-placed");
+
+  } catch (err) {
+    console.log(err);
   }
 }
 
