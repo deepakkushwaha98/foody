@@ -42,6 +42,10 @@ export const getAllOrders = async (req, res) => {
       select: "name image",
     });
 
+
+
+
+    
   res.json({
     success: true,
     orders,
