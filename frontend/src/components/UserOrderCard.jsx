@@ -59,12 +59,18 @@ const UserOrderCard = ({data}) => {
 
      <div className='flex justify-between items-center border-t pt-2'>
        <p className='font-semibold'>Total: ₹{data.totalAmount}</p>
-       <button className='bg-[#ff4d2d] transition-all hover:bg-[#d63818] text-white px-4 py-2 rounded-lg text-sm ' 
-       onClick={()=>navigate(`/track-order/${data._id}`)} >Track Order</button>
+       {data.shopOrders.some(shopOrder => shopOrder.status !== 'delivered') ? (
+         <button className='bg-[#ff4d2d] transition-all hover:bg-[#d63818] text-white px-4 py-2 rounded-lg text-sm '
+           onClick={()=>navigate(`/track-order/${data._id}`)}>
+           Track Order
+         </button>
+       ) : (
+         <span className='text-sm font-medium text-green-600'>Order completed</span>
+       )}
      </div>
      
 
-      
+     
     </div>
   )
 }

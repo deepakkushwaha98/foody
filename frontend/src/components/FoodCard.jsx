@@ -62,6 +62,12 @@ const FoodCard = ({ data }) => {
             </span>
 
         </div>
+        
+        {data.description && (
+          <p className='mt-2 text-sm text-gray-600 line-clamp-3'>
+            {data.description}
+          </p>
+        )}
       </div>
 
       <div className='flex items-center justify-between mt-auto p-4'>

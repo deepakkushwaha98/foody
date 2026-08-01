@@ -21,6 +21,7 @@ const AddItems = () => {
      const [price , setPrice] = useState(0);
      const [category , setCategory] = useState("")
      const [foodType , setFoodType] = useState("veg")
+     const [description, setDescription] = useState("")
      const categories = ["Snakes",
             "Main Course",
             "Desserts",
@@ -46,6 +47,7 @@ const AddItems = () => {
             formData.append("category" , category)
             formData.append("foodType" , foodType)
             formData.append("price" , price)
+            formData.append("description", description)
           
           
             if(backendImage){
@@ -116,10 +118,15 @@ const AddItems = () => {
                     <label htmlFor="" className='block text-sm font-medium text-gray-700 mb-1'>Food Type </label>
                     <select  className='w-full px-4 py-2 
                     border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ' onChange={(e)=> setFoodType(e.target.value)} value={foodType} >
-                       <option value="vey">veg</option>
+                       <option value="veg">veg</option>
                        <option value="non veg">non veg</option>
                     </select>
 
+                     </div>
+
+                     <div>
+                    <label htmlFor="" className='block text-sm font-medium text-gray-700 mb-1'>Description</label>
+                    <textarea rows={4} className='w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500' onChange={(e)=> setDescription(e.target.value)} value={description} placeholder='Enter item description' />
                      </div>
 
                      <div>

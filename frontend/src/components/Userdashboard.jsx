@@ -19,6 +19,8 @@ const Userdashboard = () => {
   const [updatedItemList , setUpdatedItemList] = useState(itemsInMyCity || [])
   const [showLeftShopButton , setShowLeftShopButton] = useState(false)
   const [showRightShopButton , setShowRightShopButton] = useState(false)
+  const [catePaused, setCatePaused] = useState(false)
+  const [cateDirection, setCateDirection] = useState(1)
   
   useEffect(()=>{
     if(itemsInMyCity && itemsInMyCity.length > 0){
@@ -70,6 +72,34 @@ const Userdashboard = () => {
     }
   }, [])
 
+  useEffect(() => {
+    const carousel = cateScrollRef.current
+    if (!carousel) return
+
+    const interval = setInterval(() => {
+      if (catePaused) return
+      if (!carousel) return
+
+      const maxScroll = carousel.scrollWidth - carousel.clientWidth
+      const nextLeft = carousel.scrollLeft + cateDirection
+
+      if (nextLeft >= maxScroll) {
+        setCateDirection(-1)
+        carousel.scrollBy({ left: -1, behavior: 'smooth' })
+      } else if (nextLeft <= 0) {
+        setCateDirection(1)
+        carousel.scrollBy({ left: 1, behavior: 'smooth' })
+      } else {
+        carousel.scrollBy({ left: cateDirection, behavior: 'smooth' })
+      }
+    }, 20)
+
+    return () => clearInterval(interval)
+  }, [catePaused, cateDirection])
+
+  const handleCateEnter = () => setCatePaused(true)
+  const handleCateLeave = () => setCatePaused(false)
+
   const scrollHandler = (ref,direction)=>{
      if(ref.current){
       ref.current.scrollBy({
@@ -106,7 +136,12 @@ const Userdashboard = () => {
               <FaAnglesLeft  />
 
              </button> }
-             <div className='w-full flex items-center px-12 overflow-x-auto gap-4 pb-2 ' ref={cateScrollRef}>
+             <div
+               className='w-full flex items-center px-12 overflow-x-auto gap-4 pb-2 '
+               ref={cateScrollRef}
+               onMouseEnter={handleCateEnter}
+               onMouseLeave={handleCateLeave}
+             >
                {Categories.map((cate , idx)=>(
               <CategoryCard name={cate.category} image={cate.image} key={idx} onClick={()=>handleFilterByCategory(cate.category)} />
               
