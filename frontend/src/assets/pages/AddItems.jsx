@@ -22,7 +22,7 @@ const AddItems = () => {
      const [category , setCategory] = useState("")
      const [foodType , setFoodType] = useState("veg")
      const [description, setDescription] = useState("")
-     const categories = ["Snakes",
+     const categories = ["Snacks",
             "Main Course",
             "Desserts",
             "Pizza",
