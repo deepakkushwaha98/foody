@@ -117,6 +117,45 @@ const getCurrentLocaton = async()=>{
 
 }
 
+const getLatlngByAddress = async ()=>{
+  try{
+    if(!addressInput || !addressInput.trim()){
+      setErrorMessage('Please enter an address')
+      return
+    }
+    setErrorMessage("")
+    const result = await axios.get(`https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(addressInput)}&format=json&apiKey=${apikey}`)
+    const first = result?.data?.features?.[0] || result?.data?.results?.[0]
+    if(!first){
+      setErrorMessage('Address not found')
+      return
+    }
+    // Geoapify may return features with geometry.coordinates [lon, lat]
+    let lat, lon
+    if(first.geometry && Array.isArray(first.geometry.coordinates)){
+      lon = first.geometry.coordinates[0]
+      lat = first.geometry.coordinates[1]
+    } else if(first.lat && first.lon){
+      lat = first.lat; lon = first.lon
+    } else if(first.location && first.location.lat && first.location.lon){
+      lat = first.location.lat; lon = first.location.lon
+    }
+
+    if(!lat || !lon){
+      setErrorMessage('Unable to parse geocode result')
+      return
+    }
+
+    dispatch(setLocation({lat, lon}))
+    dispatch(setAddress(addressInput))
+    setAddressInput(addressInput)
+  }
+  catch(err){
+    console.error('getLatlngByAddress error', err)
+    setErrorMessage('Failed to lookup address')
+  }
+}
+
 
 const handlePlaceOrder = async () => {
   try {
@@ -144,38 +183,25 @@ const handlePlaceOrder = async () => {
 
     dispatch(addMyOrder(result.data));
     dispatch(clearCart())
-    navigate("/order-success", { state: { order: result.data } });
-
-  } catch (err) {
-    setErrorMessage(err?.response?.data?.message || 'Unable to place order')
-    console.log(err);
-  } finally {
-    setLoading(false)
-  }
-}
-
-
-const  getLatlngByAddress =async ()=>{
-  try{
-
-    const result = await axios.get(
-      `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(
-        addressInput
-      )}&format=json&apiKey=${apikey}`
-    );
-    const lat = result?.data?.results?.[0]?.lat;
-    const lon = result?.data?.results?.[0]?.lon;
-
-    if (lat && lon) {
-      dispatch(setLocation({ lat, lon }));
-      dispatch(setAddress(result.data.results[0].address_line2));
+    localStorage.removeItem('foody-cart-state')
+    // clear server-side cart as well
+    try{
+      await axios.delete(`${serverUrl}/api/cart/clear`, { withCredentials: true })
+    }catch(e){
+      console.warn('failed to clear server cart', e?.response?.data || e.message || e)
     }
-      
+    // navigate to order placed page with order data
+    navigate('/order-placed', { state: { order: result.data } })
 
   }
   catch(e){
-    console.log(e);
+    console.error('placeOrder error', e)
+    setErrorMessage(e?.response?.data?.message || 'Failed to place order')
 
+  }
+
+  finally{
+    setLoading(false)
   }
 
 }

@@ -10,6 +10,7 @@ const FoodCard = ({ data, shopId, shopName }) => {
   const { cartItems, cartOutletId } = useSelector(state => state.user)
   const [quantity, setQuantity] = useState(0)
   const [showOutletModal, setShowOutletModal] = useState(false)
+  const [message, setMessage] = useState(null)
 
   if (!data) return null;
 
@@ -32,9 +33,18 @@ const FoodCard = ({ data, shopId, shopName }) => {
 
   const resolvedOutletId = shopId || data.shop?._id || data.shop || null
   const resolvedOutletName = shopName || data.shop?.name || data.shopName || 'this outlet'
+  const isInCart = cartItems.some(i => i.id === data._id)
+
+  const clearMessage = () => {
+    setMessage(null)
+    window.setTimeout(() => setMessage(null), 3000)
+  }
 
   const handleAddToCart = () => {
-    if (quantity <= 0) return
+    if (quantity <= 0) {
+      setMessage('Please select at least 1 item.')
+      return
+    }
 
     const currentOutletId = cartOutletId || cartItems[0]?.shopId || cartItems[0]?.shop?._id || cartItems[0]?.shop || null
     if (currentOutletId && resolvedOutletId && String(currentOutletId) !== String(resolvedOutletId)) {
@@ -54,6 +64,8 @@ const FoodCard = ({ data, shopId, shopName }) => {
       foodType: data.foodType,
     }))
     setQuantity(0)
+    setMessage('Added to cart successfully.')
+    clearMessage()
   }
 
   const handleClearAndContinue = () => {
@@ -71,6 +83,8 @@ const FoodCard = ({ data, shopId, shopName }) => {
     }))
     setQuantity(0)
     setShowOutletModal(false)
+    setMessage('Added to cart successfully.')
+    clearMessage()
   }
 
   return (
@@ -103,23 +117,29 @@ const FoodCard = ({ data, shopId, shopName }) => {
             {data.price}
           </span>
 
-          <div className='flex items-center border rounded-full overflow-hidden shadow-sm'>
-            <button className='px-2 pt-1 hover:bg-gray-100 transition' onClick={handleDecrease}>
-              <FaMinus size={12} />
+          <div className='flex items-center rounded-full overflow-hidden shadow-sm border border-[#f1f1f1]'>
+            <button className='px-3 pt-1 hover:bg-gray-100 transition' onClick={handleDecrease}>
+              <FaMinus size={14} />
             </button>
 
-            <span>{quantity}</span>
+            <span className='min-w-[2rem] text-center text-sm font-semibold'>{quantity}</span>
 
-            <button className='px-2 pt-1 hover:bg-gray-100 transition' onClick={handleIncrease}>
-              <FaPlus size={12} />
+            <button className='px-3 pt-1 hover:bg-gray-100 transition' onClick={handleIncrease}>
+              <FaPlus size={14} />
             </button>
 
-            <button className={`${cartItems.some(i => i.id == data._id) ? "bg-gray-700" : "bg-[#ff4d2d]"} text-white px-3 py-2 transition-colors`} onClick={handleAddToCart}>
+            <button className={`${isInCart ? "bg-[#2aa56c]" : "bg-[#ff4d2d]"} text-white px-4 py-2 transition-colors`} onClick={handleAddToCart}>
               <FaCartPlus size={16} />
             </button>
           </div>
         </div>
       </div>
+
+      {message ? (
+        <div className='fixed bottom-6 right-6 z-50 rounded-2xl border border-[#d1e7dd] bg-[#d1e7dd] px-4 py-3 text-sm font-medium text-[#0f5132] shadow-[0_18px_50px_rgba(0,0,0,0.14)]'>
+          {message}
+        </div>
+      ) : null}
 
       {showOutletModal ? (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4'>

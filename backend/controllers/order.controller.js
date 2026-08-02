@@ -307,6 +307,88 @@ export const getMostOrderedItems = async (req, res) => {
 }
 
 
+export const rateOrderItem = async (req, res) => {
+    try {
+        const { orderId, shopOrderId, shopOrderItemId, rating, review } = req.body
+        const userId = req.userId
+        const value = Number(rating)
+
+        if (!orderId || !shopOrderId || !shopOrderItemId || !value || value < 1 || value > 5) {
+            return res.status(400).json({ message: "Invalid rating request" })
+        }
+
+        const order = await Order.findById(orderId)
+        if (!order || String(order.user) !== String(userId)) {
+            return res.status(404).json({ message: "Order not found" })
+        }
+
+        const shopOrder = order.shopOrders.id(shopOrderId) || order.shopOrders.find((o) => String(o._id) === String(shopOrderId))
+        if (!shopOrder) {
+            return res.status(404).json({ message: "Shop order not found" })
+        }
+
+        if (shopOrder.status !== "delivered") {
+            return res.status(400).json({ message: "You can only rate delivered orders" })
+        }
+
+        const orderItem = shopOrder.shopOrderItem.id(shopOrderItemId) || shopOrder.shopOrderItem.find((item) => String(item._id) === String(shopOrderItemId))
+        if (!orderItem) {
+            return res.status(404).json({ message: "Ordered item not found" })
+        }
+
+        const product = await Item.findById(orderItem.item)
+        if (!product) {
+            return res.status(404).json({ message: "Food item not found" })
+        }
+
+        const existingRating = orderItem.rating?.value
+        const existingUser = orderItem.rating?.user && String(orderItem.rating.user) === String(userId)
+
+        if (existingRating && !existingUser) {
+            return res.status(400).json({ message: "This item has already been rated" })
+        }
+
+        if (existingRating && existingUser) {
+            const previousValue = Number(orderItem.rating.value || 0)
+            if (product.rating.count > 0) {
+                product.rating.average = ((product.rating.average * product.rating.count - previousValue + value) / product.rating.count)
+            } else {
+                product.rating.average = value
+                product.rating.count = 1
+            }
+        } else {
+            const totalPoints = (product.rating.average || 0) * (product.rating.count || 0)
+            product.rating.count = (product.rating.count || 0) + 1
+            product.rating.average = (totalPoints + value) / product.rating.count
+        }
+
+        product.rating.average = Number(product.rating.average.toFixed(2))
+        await product.save()
+
+        orderItem.rating = {
+            user: userId,
+            value,
+            review: review || "",
+            ratedAt: new Date(),
+        }
+
+        await order.save()
+
+        return res.status(200).json({
+            itemId: String(orderItem.item),
+            shopOrderId: String(shopOrder._id),
+            orderItemId: String(orderItem._id),
+            rating: orderItem.rating,
+            averageRating: product.rating.average,
+            ratingCount: product.rating.count,
+        })
+    } catch (err) {
+        console.error("rateOrderItem error:", err)
+        return res.status(500).json({ message: `rate item error ${err.message || err}` })
+    }
+}
+
+
 
 
 export const updateOrderStatus = async (req,res)=>{
