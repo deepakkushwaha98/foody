@@ -40,12 +40,7 @@ export const getAllOrders = async (req, res) => {
     .populate({
       path: "shopOrders.shopOrderItem.item",
       select: "name image",
-    });
-
-
-
-
-    
+    });   
   res.json({
     success: true,
     orders,

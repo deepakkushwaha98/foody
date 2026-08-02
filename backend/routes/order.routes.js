@@ -1,6 +1,6 @@
 import express from "express"
 import { isAuth } from "../middlewares/isAuth.js"
-import { getDeliveryBoyAssigment,getOrderById, verifyDeliveryOtp, sendDeliveryOtp ,getMyOrders, placeOrder, updateOrderStatus, getCurrentOrder ,acceptOrder } from "../controllers/order.controller.js"
+import { getDeliveryBoyAssigment,getOrderById, verifyDeliveryOtp, sendDeliveryOtp ,getMyOrders, placeOrder, updateOrderStatus, getCurrentOrder ,acceptOrder, getMostOrderedItems } from "../controllers/order.controller.js"
 
 const orderRouter = express.Router()
 
@@ -13,6 +13,8 @@ orderRouter.get("/get-assignment" ,isAuth, getDeliveryBoyAssigment)
 orderRouter.get("/accept-order/:assignmentId" ,isAuth, acceptOrder)
 orderRouter.get("/get-current-order" ,isAuth, getCurrentOrder)
 orderRouter.get("/get-order-by-id/:orderId" ,isAuth, getOrderById)
+orderRouter.get("/most-ordered" ,isAuth, getMostOrderedItems)
+orderRouter.post("/" ,isAuth, placeOrder)
 
 export default orderRouter
 

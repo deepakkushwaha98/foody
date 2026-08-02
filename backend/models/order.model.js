@@ -66,10 +66,24 @@ const orderSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
     },
+    outletId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Shop",
+        default:null
+    },
     paymentMethod:{
         type:String,
         enum:['cod' , 'online'],
         required:true
+    },
+    paymentStatus:{
+        type:String,
+        enum:['pending','paid','failed'],
+        default:'pending'
+    },
+    paymentId:{
+        type:String,
+        default:null
     },
     deliveryAddress:{
         text:String,
@@ -78,6 +92,30 @@ const orderSchema = new mongoose.Schema({
     },
     totalAmount:{
         type:Number 
+    },
+    subtotal:{
+        type:Number,
+        default:0
+    },
+    platformFee:{
+        type:Number,
+        default:0
+    },
+    packagingCharges:{
+        type:Number,
+        default:0
+    },
+    taxAmount:{
+        type:Number,
+        default:0
+    },
+    deliveryCharges:{
+        type:Number,
+        default:0
+    },
+    discountAmount:{
+        type:Number,
+        default:0
     },
     shopOrders:[shopOrderSchema]
 

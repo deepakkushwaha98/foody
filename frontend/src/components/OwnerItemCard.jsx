@@ -7,7 +7,7 @@ import { serverUrl } from '../App';
 import { useDispatch } from 'react-redux';
 import { setMyShopData } from '../redux/ownerSlice';
 
-const OwnerItemCard = ({ data }) => {
+const OwnerItemCard = ({ data, highlighted = false, cardId, cardRef }) => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
      const handleDeleteItem = async() =>{
@@ -26,16 +26,20 @@ const OwnerItemCard = ({ data }) => {
    }
   return (
     
-        <div className='flex bg-white rounded-lg shadow-md overflow-hidden border border-[#ff4d2d] w-full max-w-2xl ' >
+          <div
+             id={cardId}
+             ref={cardRef}
+             className={`flex w-full max-w-2xl overflow-hidden rounded-[1.6rem] border bg-white shadow-md transition-all duration-500 ${highlighted ? 'border-[#ff6a43] shadow-[0_0_0_1px_rgba(255,106,67,0.35),0_0_32px_rgba(255,106,67,0.18)] ring-2 ring-[#ffb29a]/60' : 'border-[#ffd4c5]'}`}
+          >
             
-            <div className='w-36 self-stretch  flex-shrink-0 bg-gray-50'>
+                <div className='w-36 self-stretch flex-shrink-0 bg-gray-50'>
                 <img src={data?.image} alt="" className='w-full h-full object-cover' />   
              </div>
-             <div className='flex flex-col justify-center p-3 flex-1 '>
+                 <div className='flex flex-1 flex-col justify-center p-4 '>
                 <div className=''>
-                <h2 className='text-base font-semibold  '>name: <span>{data?.name}</span></h2>
-             <p className='font-medium text-gray-700 '>Category: <span>{data?.category}</span> </p>
-                <p className='font-medium text-gray-700 '>Food Type: <span>{data?.foodType}</span> </p>
+                     <h2 className='text-base font-semibold text-slate-900'>name: <span>{data?.name}</span></h2>
+                 <p className='font-medium text-gray-700 '>Category: <span>{data?.category}</span> </p>
+                     <p className='font-medium text-gray-700 '>Food Type: <span>{data?.foodType}</span> </p>
 
                 </div>
    

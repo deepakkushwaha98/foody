@@ -3,16 +3,15 @@ import { IoMdArrowBack } from "react-icons/io";
 import { IoLocation } from "react-icons/io5";
 import { useNavigate } from 'react-router-dom';
 import { IoSearchSharp } from "react-icons/io5";
-import { TbCurrentLocation, TbLockCancel } from "react-icons/tb";
+import { TbCurrentLocation } from "react-icons/tb";
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { useDispatch, useSelector } from 'react-redux';
 import "leaflet/dist/leaflet.css";
-import { addMyOrder, setShopInMyCity } from '../../redux/userSlice';
+import { addMyOrder, clearCart } from '../../redux/userSlice';
 import { setAddress, setLocation } from '../../redux/mapSlice';
 import axios from 'axios';
 import { MdDeliveryDining } from "react-icons/md";
-import { FaMobileScreenButton } from "react-icons/fa6";
-import { FaCreditCard } from "react-icons/fa6";
+import { FaShieldAlt } from "react-icons/fa";
 import { serverUrl } from '../../App';
 
 function RecenterMap({ location }) {
@@ -33,13 +32,46 @@ function RecenterMap({ location }) {
 const CheckOut =()=>{
   const navigate = useNavigate()
   const {location , address}  = useSelector(state =>state.map)
-  const {cartItems , totalAmount} = useSelector(state =>state.user)
+  const {cartItems , totalAmount, cartOutletName} = useSelector(state =>state.user)
   
   const dispatch = useDispatch()
   const [addressInput , setAddressInput] = useState("")
-  const [paymentMethod , setPaymentMethod] = useState("cod")
+  const paymentMethod = "cod"
+  const [couponCode, setCouponCode] = useState("")
+  const [discountAmount, setDiscountAmount] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   const deliveryFee = totalAmount>500?0:40;
-  const AmountWithDeliveryFee = totalAmount + deliveryFee; 
+  const packagingCharges = totalAmount > 0 ? Math.max(20, Math.round(totalAmount * 0.015)) : 0
+  const platformFee = totalAmount > 0 ? 8 : 0
+  const gst = Math.round(totalAmount * 0.05)
+  const subtotal = totalAmount
+  const payableAmount = Math.max(0, subtotal + deliveryFee + packagingCharges + platformFee + gst - discountAmount)
+
+  const applyCoupon = async () => {
+    try {
+      setErrorMessage("")
+      if (!couponCode.trim()) {
+        setDiscountAmount(0)
+        return
+      }
+
+      const result = await axios.post(
+        `${serverUrl}/api/coupon/validate`,
+        {
+          couponCode,
+          subtotal,
+        },
+        { withCredentials: true }
+      )
+
+      setDiscountAmount(result.data?.discountAmount || 0)
+    } catch (err) {
+      setDiscountAmount(0)
+      setErrorMessage(err?.response?.data?.message || 'Invalid coupon code')
+    }
+  }
+
   const onDragEnd =(e)=>{
     console.log(e)
     const { lat, lng} = e.target.getLatLng();
@@ -87,29 +119,38 @@ const getCurrentLocaton = async()=>{
 
 
 const handlePlaceOrder = async () => {
-  // Online payments temporarily unavailable — notify user
-  if (paymentMethod === "online") {
-    alert("UPI and card option not available please go through COD");
-    return;
-  }
-
   try {
+    setLoading(true)
+    setErrorMessage("")
+
+    if (!cartItems.length) {
+      setErrorMessage('Your cart is empty')
+      return
+    }
+
+    const deliveryAddress = {
+      text: addressInput,
+      latitude: location.lat,
+      longitude: location.lon,
+    }
+
     const result = await axios.post(`${serverUrl}/api/order/place-order`, {
       paymentMethod,
-      deliveryAddress: {
-        text: addressInput,
-        latitude: location.lat,
-        longitude: location.lon,
-      },
-      totalAmount,
+      deliveryAddress,
+      couponCode,
+      totalAmount: payableAmount,
       cartItems,
     }, { withCredentials: true });
 
     dispatch(addMyOrder(result.data));
-    navigate("/order-placed");
+    dispatch(clearCart())
+    navigate("/order-success", { state: { order: result.data } });
 
   } catch (err) {
+    setErrorMessage(err?.response?.data?.message || 'Unable to place order')
     console.log(err);
+  } finally {
+    setLoading(false)
   }
 }
 
@@ -149,12 +190,18 @@ useEffect(()=>{
 
     
   return (
-    <div className='min-h-screen bg-[#fff9f6] flex items-center justify-center p-6'>
+    <div className='min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,243,238,0.95),_rgba(255,249,246,0.98)_42%,_#fff9f6_100%)] flex items-center justify-center p-6'>
          <div className='absolute top-[20px] left-[20px] z-[10] ' onClick={()=>navigate("/")}>
                         <IoMdArrowBack size={35} className='text-[#ff4d2d] ' />
          </div>
-         <div className='w-full  max-w-[900px] bg-white rounded-2xl shadow-xl p-6 space-y-6 '>
-            <h1 className='text-2xl font-bold'>Checkout</h1>
+         <div className='w-full  max-w-[900px] bg-white rounded-3xl shadow-[0_24px_70px_rgba(255,124,77,0.12)] p-6 space-y-6 border border-[#ffd7c8] '>
+            <div className='flex items-center justify-between gap-4'>
+              <h1 className='text-2xl font-bold'>Checkout</h1>
+              <div className='rounded-full bg-[#fff0e8] px-3 py-1 text-sm font-semibold text-[#ff5b34]'>
+                {cartOutletName || 'Selected outlet'}
+              </div>
+            </div>
+            {errorMessage ? <div className='rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'>{errorMessage}</div> : null}
              <section className=' '>
               <h2 className='text-lg  font-semibold mb-2 flex items-center gap-2 text-gray-800'>
                 <IoLocation  className='text-[#ff4d2d] '/> Delivery Location  </h2>
@@ -205,10 +252,8 @@ useEffect(()=>{
 
             <section>
               <h2 className='text-lg font-semibold b-3 text-gray-800'> Payment Method</h2>
-              <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                <div className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
-                  paymentMethod === "cod"? "border-[#ff4d2d] bg-orange-50 shadow" : "border-gray-50 hover:border-gray-300"
-                }`} onClick={()=>setPaymentMethod("cod")}>
+              <div className='grid grid-cols-1 gap-4'>
+                <div className='flex items-center gap-3 rounded-xl border p-4 text-left transition border-[#ff4d2d] bg-orange-50 shadow'>
 
                   <span className='inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-100'>
                     <MdDeliveryDining className='text-green-600 text-xl' />
@@ -221,26 +266,14 @@ useEffect(()=>{
 
                 </div>
 
+              </div>
+            </section>
 
-                <div className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
-                  paymentMethod === "online"? "border-[#ff4d2d] bg-orange-50 shadow" : "border-gray-50 hover:border-gray-300"
-                }`} onClick={()=>setPaymentMethod("online")}>
-
-                    <span className='inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-100'>
-                      <FaMobileScreenButton className='text-purple-700 text-lg'/>
-                    </span>
-                    <span className='inline-flex h-10 w-10 items-center justify-center rounded-full bg-blue-100'>
-                      <FaCreditCard className='text-blue-700 text-lg'/>
-
-                    </span>
-
-                    <div>
-                      <p className='font-medium text-gray-800'>UPI/Credit.Debit card</p>
-                      <p className='text-xs text-gray-500'>Pay Securely Online</p>
-                    </div>
-
-                </div>
-
+            <section className='rounded-2xl border border-[#f1dfd5] bg-[#fffaf7] p-4'>
+              <h2 className='text-lg font-semibold text-gray-800'>Coupon</h2>
+              <div className='mt-3 flex gap-2'>
+                <input value={couponCode} onChange={(e) => setCouponCode(e.target.value)} className='flex-1 rounded-lg border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#ff4d2d]' placeholder='Apply coupon code' />
+                <button type='button' onClick={applyCoupon} className='rounded-lg bg-[#ff4d2d] px-4 py-2 text-sm font-semibold text-white'>Apply Coupon</button>
               </div>
             </section>
 
@@ -264,7 +297,7 @@ useEffect(()=>{
                     
                     </span>
                     <span>
-                      {totalAmount}
+                      ₹ {subtotal}
                     </span>
                 
                </div>
@@ -274,21 +307,60 @@ useEffect(()=>{
                   Delivery Fee
                 </span>
                 <span>
-                  {deliveryFee ==0?"Free":deliveryFee}
+                  {deliveryFee ==0?"Free":`₹ ${deliveryFee}`}
                 </span>
                </div> 
+               <div className='flex justify-between font-medium text-gray-800'>
+                <span>
+                  Packaging Charges
+                </span>
+                <span>
+                  ₹ {packagingCharges}
+                </span>
+               </div>
+               <div className='flex justify-between font-medium text-gray-800'>
+                <span>
+                  Platform Fee
+                </span>
+                <span>
+                  ₹ {platformFee}
+                </span>
+               </div>
+               <div className='flex justify-between font-medium text-gray-800'>
+                <span>
+                  GST / Taxes
+                </span>
+                <span>
+                  ₹ {gst}
+                </span>
+               </div>
+               <div className='flex justify-between font-medium text-gray-800'>
+                <span>
+                  Discount
+                </span>
+                <span>
+                  -₹ {discountAmount}
+                </span>
+               </div>
                <div className='flex justify-between font-medium text-[#ff4d2d]'>
                 <span>
                   Total Amount
                 </span>
                 <span>
-                  {AmountWithDeliveryFee}
+                  ₹ {payableAmount}
                 </span>
                </div>
               </div>
             </section>
-            <button className=' rounded-xl bg-[#ff4d2d] w-full hover:bg-[#e64526] text-white py-3 transition-colors  cursor-pointer
-            font-semibold ' onClick={handlePlaceOrder}>{paymentMethod=="cod"?"Place Order": "Pay & Place Order"}</button>
+            <section className='rounded-2xl border border-[#f0d8cd] bg-[#fffaf7] p-4'>
+              <h3 className='flex items-center gap-2 text-sm font-semibold text-slate-900'><FaShieldAlt className='text-[#ff5b34]' /> Secure Payments</h3>
+              <p className='mt-2 text-xs leading-6 text-slate-500'>Cash on delivery is available now. Secure digital payments can be added later without changing the checkout structure.</p>
+              <div className='mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600'>
+                <span className='rounded-full bg-white px-3 py-1 shadow-sm'>COD</span>
+                <span className='rounded-full bg-white px-3 py-1 shadow-sm'>Secure Checkout</span>
+              </div>
+            </section>
+            <button disabled={loading || cartItems.length === 0} className='rounded-xl bg-[#ff4d2d] w-full hover:bg-[#e64526] text-white py-3 transition-colors cursor-pointer font-semibold disabled:cursor-not-allowed disabled:opacity-60' onClick={handlePlaceOrder}>{loading ? 'Processing...' : 'Place Order'}</button>
          </div>
         
       

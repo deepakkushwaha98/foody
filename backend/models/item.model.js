@@ -15,7 +15,7 @@ const itemSchema = mongoose.Schema({
     },
     category:{
         type:String,
-        enum:["Snacks",
+        enum:["Snakes",
             "Main Course",
             "Desserts",
             "Pizza",
@@ -49,12 +49,7 @@ const itemSchema = mongoose.Schema({
             type:Number,
             default:0
         }
-    },
-    description:{
-        type:String,
-        trim:true,
-        default:""
-    }
+    } 
 },{timestamps:true})
 
 const Item = mongoose.model("Item" , itemSchema)

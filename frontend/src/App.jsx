@@ -24,7 +24,7 @@ import Shop from "./assets/pages/Shop.jsx";
 import { useEffect } from "react";
 import { addMyOrder, updateRealTimeOrderStatus } from "./redux/userSlice.js";
 import { SocketProvider, useSocket } from "./context/SocketContext.jsx";
-import { useState } from "react";
+import useSyncCart from "./hooks/useSyncCart.jsx";
 
 // Inner component that uses the socket context
 function AppContent() {
@@ -39,6 +39,7 @@ function AppContent() {
   UseGetItemByCIty()
   useGetMyOrder()
   useUpdateLocation()
+  useSyncCart()
 
   // Listen for socket events
   useEffect(() => {
@@ -84,6 +85,7 @@ function AppContent() {
       <Route path="/cart" element={userData?<CartPage/> :<Navigate to={"/signin"}/>} /> 
        <Route path="/checkout" element={userData?<CheckOut/> :<Navigate to={"/signin"}/>} /> 
         <Route path="/order-placed" element={userData?<OrderPlaced/> :<Navigate to={"/signin"}/>} /> 
+        <Route path="/order-success" element={userData?<OrderPlaced/> :<Navigate to={"/signin"}/>} /> 
         <Route path="/my-orders" element={userData?<MyOrders/> :<Navigate to={"/signin"}/>} /> 
       <Route path="/track-order/:orderId" element={userData?<TrackOrderPage/> :<Navigate to={"/signin"}/>} />
       <Route path="/shop/:shopId" element={userData?<Shop/> :<Navigate to={"/signin"}/>} />

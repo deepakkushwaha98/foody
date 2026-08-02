@@ -1,69 +1,118 @@
+import mongoose from "mongoose"
 import Shop from "../models/shop.model.js"
 import Order from "../models/order.model.js"
 import User from "../models/user.model.js"
+import Item from "../models/item.model.js"
 import DeliveryAssignment from "../models/deliveryAssigment.js"
 import { sendDeliveryOtpMail } from "../utils/emailService.js"
+import { resolveCouponDiscount } from "../utils/coupons.js"
+
+const buildOrderPricing = async (reqUserId, cartItems, deliveryAddress, paymentMethod, paymentMeta = {}) => {
+    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+        const error = new Error("cart is empty")
+        error.statusCode = 400
+        throw error
+    }
+
+    const outletIds = [...new Set(cartItems.map((item) => String(item?.shop?._id || item?.shop || item?.shopId || "")).filter(Boolean))]
+    if (outletIds.length !== 1) {
+        const error = new Error("Orders from multiple outlets are not allowed.")
+        error.statusCode = 400
+        throw error
+    }
+
+    const outletId = outletIds[0]
+    const shop = await Shop.findById(outletId).populate("owner", "name fullName")
+    if (!shop) {
+        const error = new Error("shop not found")
+        error.statusCode = 400
+        throw error
+    }
+
+    const itemIds = [...new Set(cartItems.map((item) => String(item?.id || item?._id || item?.itemId || "")).filter(Boolean))]
+    const menuItems = await Item.find({ _id: { $in: itemIds }, shop: outletId })
+    const itemMap = new Map(menuItems.map((item) => [String(item._id), item]))
+
+    const shopOrderItem = cartItems.map((cartItem) => {
+        const itemId = String(cartItem?.id || cartItem?._id || cartItem?.itemId || "")
+        const menuItem = itemMap.get(itemId)
+
+        if (!menuItem) {
+            const error = new Error("This item is no longer available.")
+            error.statusCode = 400
+            throw error
+        }
+
+        const quantity = Number(cartItem?.quantity || 0)
+        if (quantity <= 0) {
+            const error = new Error("Invalid item quantity")
+            error.statusCode = 400
+            throw error
+        }
+
+        return {
+            item: menuItem._id,
+            name: menuItem.name,
+            image: menuItem.image,
+            price: Number(menuItem.price),
+            quantity,
+        }
+    })
+
+    const subtotal = shopOrderItem.reduce((sum, item) => sum + Number(item.price) * Number(item.quantity), 0)
+    const platformFee = subtotal > 0 ? 8 : 0
+    const packagingCharges = subtotal > 0 ? Math.max(20, Math.round(subtotal * 0.015)) : 0
+    const taxAmount = Math.round(subtotal * 0.05)
+    const deliveryCharges = subtotal > 500 ? 0 : 40
+    const couponResult = resolveCouponDiscount(paymentMeta.couponCode, subtotal)
+    const discountAmount = couponResult.valid ? couponResult.discountAmount : 0
+    const totalAmount = Math.max(0, subtotal + platformFee + packagingCharges + taxAmount + deliveryCharges - discountAmount)
+
+    return {
+        outletId,
+        shop,
+        shopOrder: {
+            shop: shop._id,
+            owner: shop.owner?._id,
+            subtotal,
+            shopOrderItem,
+        },
+        pricing: {
+            subtotal,
+            platformFee,
+            packagingCharges,
+            taxAmount,
+            deliveryCharges,
+            discountAmount,
+            totalAmount,
+        },
+        deliveryAddress,
+        paymentMethod,
+        paymentMeta,
+    }
+}
 
 export const placeOrder = async(req , res)=>{
     try{
-        const {cartItems,paymentMethod ,deliveryAddress ,totalAmount } = req.body
-        if(cartItems.length ==0 || !cartItems ){
-            return res.status(400).json({message:"cart is empty"})
-        }
-        if(!deliveryAddress.text || !deliveryAddress.latitude || !deliveryAddress.longitude){
+        const {cartItems,paymentMethod ,deliveryAddress ,couponCode } = req.body
+        if(!deliveryAddress?.text || !deliveryAddress?.latitude || !deliveryAddress?.longitude){
             return res.status(400).json({message:"send complete delivery address"})
         }
-
-        const groupItemsByShop = {} 
-
-        cartItems.forEach(item => {
-            const shopId = item.shop._id || item.shop
-
-            if(!groupItemsByShop[shopId]){
-               groupItemsByShop[shopId] =[]
-            }
-
-            groupItemsByShop[shopId].push(item)
-            
-        });
-
-
-
-        const shopOrders = await Promise.all(Object.keys(groupItemsByShop).map(async (shopId)=>{
-            const shop = await Shop.findById(shopId).populate("owner")
-            if(!shop){
-                throw new Error(`Shop with id ${shopId} not found`)
-            }
-
-            const items = groupItemsByShop[shopId]
-            const subtotal = items.reduce((sum ,i )=>sum+Number(i.price*Number(i.quantity)),0)
-            return {
-                shop:shop._id,
-                owner:shop.owner._id,
-                subtotal,
-                shopOrderItem: items.map((i)=>({
-                item: i.id,
-                image:i.image,
-                price: i.price,
-                quantity: i.quantity,
-                name: i.name
-            }))
-
-
-            }
-            
-        }
-    )
-
-
-        )
-    
+        const orderData = await buildOrderPricing(req.userId, cartItems, deliveryAddress, paymentMethod, { couponCode })
         const newOrder = await Order.create({
             user:req.userId,
             paymentMethod,
-            deliveryAddress,
-            totalAmount,
-            shopOrders
+            paymentStatus: "paid",
+            outletId: orderData.outletId,
+            deliveryAddress: orderData.deliveryAddress,
+            totalAmount: orderData.pricing.totalAmount,
+            subtotal: orderData.pricing.subtotal,
+            platformFee: orderData.pricing.platformFee,
+            packagingCharges: orderData.pricing.packagingCharges,
+            taxAmount: orderData.pricing.taxAmount,
+            deliveryCharges: orderData.pricing.deliveryCharges,
+            discountAmount: orderData.pricing.discountAmount,
+            shopOrders:[orderData.shopOrder]
 
         })
 
@@ -176,6 +225,84 @@ export const getMyOrders = async (req,res)=>{
     catch(err){
         console.error('getMyOrders error:', err);
         return res.status(500).json({message: `get User order errr ${err}`})
+    }
+}
+
+
+export const getMostOrderedItems = async (req, res) => {
+    try {
+        const ownerId = new mongoose.Types.ObjectId(req.userId)
+        const shop = await Shop.findOne({ owner: req.userId }).populate({
+            path: "items",
+            select: "name image category",
+        })
+
+        const itemLookup = new Map((shop?.items || []).map((item) => [String(item._id), item]))
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+
+        const groupedItems = await Order.aggregate([
+            {
+                $match: {
+                    "shopOrders.owner": ownerId,
+                    createdAt: { $gte: sevenDaysAgo },
+                },
+            },
+            { $unwind: "$shopOrders" },
+            {
+                $match: {
+                    "shopOrders.owner": ownerId,
+                },
+            },
+            { $unwind: "$shopOrders.shopOrderItem" },
+            {
+                $group: {
+                    _id: "$shopOrders.shopOrderItem.item",
+                    totalOrders: {
+                        $sum: {
+                            $ifNull: ["$shopOrders.shopOrderItem.quantity", 1],
+                        },
+                    },
+                },
+            },
+            {
+                $sort: {
+                    totalOrders: -1,
+                },
+            },
+            { $limit: 5 },
+            {
+                $lookup: {
+                    from: "items",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "itemDetails",
+                },
+            },
+            {
+                $unwind: {
+                    path: "$itemDetails",
+                    preserveNullAndEmptyArrays: true,
+                },
+            },
+        ])
+
+        const mostOrdered = groupedItems
+            .filter((item) => item._id)
+            .map((item) => {
+                const shopItem = itemLookup.get(String(item._id))
+                return {
+                    foodId: item._id,
+                    image: shopItem?.image || item.itemDetails?.image || "",
+                    name: shopItem?.name || item.itemDetails?.name || "Untitled item",
+                    category: shopItem?.category || item.itemDetails?.category || "Uncategorized",
+                    totalOrders: item.totalOrders || 0,
+                }
+            })
+
+        return res.status(200).json(mostOrdered)
+    } catch (err) {
+        console.error("getMostOrderedItems error:", err)
+        return res.status(500).json({ message: `get most ordered items error ${err.message || err}` })
     }
 }
 

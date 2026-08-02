@@ -1,5 +1,25 @@
 import { createSlice } from "@reduxjs/toolkit"
 
+const CART_STORAGE_KEY = "foody-cart-state"
+
+const loadCartState = () => {
+   try {
+      const raw = localStorage.getItem(CART_STORAGE_KEY)
+      if (!raw) return { cartItems: [], totalAmount: 0, cartOutletId: null, cartOutletName: null }
+      const parsed = JSON.parse(raw)
+      return {
+         cartItems: Array.isArray(parsed.cartItems) ? parsed.cartItems : [],
+         totalAmount: Number(parsed.totalAmount || 0),
+         cartOutletId: parsed.cartOutletId || null,
+         cartOutletName: parsed.cartOutletName || null,
+      }
+   } catch {
+      return { cartItems: [], totalAmount: 0, cartOutletId: null, cartOutletName: null }
+   }
+}
+
+const persistedCart = typeof window !== "undefined" ? loadCartState() : { cartItems: [], totalAmount: 0, cartOutletId: null, cartOutletName: null }
+
 
 const userSlice = createSlice({
     name:"user",
@@ -10,8 +30,10 @@ const userSlice = createSlice({
         currentAddress:null,
         shopInMyCity:null,
         itemsInMyCity:null,
-        cartItems:[],
-        totalAmount:0,
+      cartItems:persistedCart.cartItems,
+      totalAmount:persistedCart.totalAmount,
+      cartOutletId:persistedCart.cartOutletId,
+      cartOutletName:persistedCart.cartOutletName,
         myOrders:[],
         searchItems:null
 
@@ -39,6 +61,10 @@ const userSlice = createSlice({
         addToCart :(state , action)=>{
           const cartItem = action.payload
           const existingItem = state.cartItems.find(i=>i.id ==cartItem.id)
+               if(!state.cartOutletId){
+                  state.cartOutletId = cartItem.shopId || cartItem.shop?._id || cartItem.shop || null
+                  state.cartOutletName = cartItem.shopName || cartItem.shop?.name || null
+               }
           if(existingItem){
             existingItem.quantity+= cartItem.quantity;
 
@@ -75,7 +101,27 @@ const userSlice = createSlice({
   0
 );
 
+               if(state.cartItems.length === 0){
+                  state.cartOutletId = null
+                  state.cartOutletName = null
+               }
+
         },
+
+            clearCart:(state)=>{
+             state.cartItems=[]
+             state.totalAmount=0
+             state.cartOutletId=null
+             state.cartOutletName=null
+            },
+
+            setCartFromServer:(state, action)=>{
+             const payload = action.payload || {}
+             state.cartItems = Array.isArray(payload.cartItems) ? payload.cartItems : []
+             state.totalAmount = Number(payload.totalAmount || 0)
+             state.cartOutletId = payload.cartOutletId || null
+             state.cartOutletName = payload.cartOutletName || null
+            },
 
 
         setMyOrders:(state , action)=>{
@@ -119,5 +165,5 @@ const userSlice = createSlice({
     }
 })
 
-export const {setUserData,updateRealTimeOrderStatus, updateOrderStatus ,setSearchItems,setMyOrders,addMyOrder , setCurrentCity, removeCartItem , setCurrentState , setCurrentAddress , setShopInMyCity , setItemInMyCity, updateQuantity ,addToCart} = userSlice.actions
+export const {setUserData,updateRealTimeOrderStatus, updateOrderStatus ,setSearchItems,setMyOrders,addMyOrder , setCurrentCity, removeCartItem , clearCart, setCartFromServer, setCurrentState , setCurrentAddress , setShopInMyCity , setItemInMyCity, updateQuantity ,addToCart} = userSlice.actions
 export default userSlice.reducer
