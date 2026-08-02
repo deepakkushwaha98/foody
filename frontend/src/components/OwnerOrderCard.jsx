@@ -1,30 +1,38 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import axios from 'axios'
 import { FaPhoneAlt } from "react-icons/fa";
 import {serverUrl} from "../App"
 import { updateOrderStatus } from '../redux/userSlice';
 import { useDispatch } from "react-redux";
-import { useState } from 'react';
-
 
 const OwnerOrderCard = ({data}) => {
   const dispatch = useDispatch();
 
   const [availableBoys , setAvailableBoys] = useState([]);
+  const [assignedDeliveryBoy, setAssignedDeliveryBoy] = useState(data?.shopOrders?.assignedDeliveryBoy || null);
 
-  const handleUpdateStatus = async (orderId , shopId , status)=>{
-    try{
-      const result = await axios.put(`${serverUrl}/api/order/update-status/${orderId}/${shopId}` , {status} , {withCredentials:true})
-      dispatch(updateOrderStatus({orderId , shopId , status}))
-      setAvailableBoys(result.data.availableBoys);
-      console.log("result data", result.data);
+  useEffect(() => {
+    setAssignedDeliveryBoy(data?.shopOrders?.assignedDeliveryBoy || null)
+  }, [data?.shopOrders?.assignedDeliveryBoy])
+
+  const handleUpdateStatus = async (orderId, shopId, status) => {
+    try {
+      const result = await axios.put(
+        `${serverUrl}/api/order/update-status/${orderId}/${shopId}`,
+        { status },
+        { withCredentials: true }
+      );
+
+      dispatch(updateOrderStatus({ orderId, shopId, status, assignedDeliveryBoy: result.data.assignedDeliveryBoy }));
+      setAvailableBoys(result.data.availableBoys || []);
+      if (result.data.assignedDeliveryBoy) {
+        setAssignedDeliveryBoy(result.data.assignedDeliveryBoy);
+      }
+    } catch (err) {
+      console.error("Owner update status error:", err);
     }
-    catch(err){
-      console.log(err);
+  };
 
-    }
-
-  }
   return (
     <div className='bg-white rounded-lg shadow p-4 space-y-4'>
       <div>
@@ -67,14 +75,21 @@ const OwnerOrderCard = ({data}) => {
         </select>
       </div>
 
-      {data?.shopOrders?.status === "out of delivery" &&
+      {(data?.shopOrders?.status === "out of delivery" || assignedDeliveryBoy) &&
        <div className ="mt-4 p-2 border rounded-lg text-sm bg-orange-50">
-         {data?.shopOrders?.assignedDeliveryBoy ? <p>Assigned Delivery Boy:</p> : <p>Available Delivery Boys</p>}
-         {availableBoys.length>0?(
-          availableBoys.map((b,index)=>(
-            <div key={b.id} className='text-gray-300'>{b.fullName} - {b.mobile} </div>
-          ))
-         ): data?.shopOrders?.assignedDeliveryBoy?<div>{data?.shopOrders?.assignedDeliveryBoy.fullName} </div> :<div>waiting for available delivery boys to accept </div> }
+         {assignedDeliveryBoy ? <p className='font-semibold'>Assigned Delivery Boy</p> : <p className='font-semibold'>Available Delivery Boys</p>}
+         {assignedDeliveryBoy ? (
+           <div className='text-gray-700'>
+             <p>{assignedDeliveryBoy.fullName}</p>
+             {assignedDeliveryBoy.mobile && <p className='text-sm text-gray-500'>{assignedDeliveryBoy.mobile}</p>}
+           </div>
+         ) : availableBoys.length > 0 ? (
+           availableBoys.map((b,index)=>(
+             <div key={b.id} className='text-gray-700'>{b.fullName} - {b.mobile} </div>
+           ))
+         ) : (
+           <div className='text-gray-700'>waiting for available delivery boys to accept</div>
+         )}
       </div> }
 
       <div className='text-right font-bold text-gray-800 text-sm'>

@@ -133,23 +133,29 @@ const userSlice = createSlice({
 
 
         updateOrderStatus:(state , action)=>{
-         const {orderId,shopId,status} = action.payload
+         const {orderId,shopId,status,assignedDeliveryBoy} = action.payload
          const order = state.myOrders.find(o=>o._id==orderId)
          if(order){
             if(order.shopOrders && order.shopOrders.shop._id==shopId){
                order.shopOrders.status=status
+               if(assignedDeliveryBoy){
+                 order.shopOrders.assignedDeliveryBoy = assignedDeliveryBoy
+               }
             }
          }
         },
 
         updateRealTimeOrderStatus:(state , action)=>{
          if (!Array.isArray(state.myOrders)) return
-         const {orderId,shopId,status} = action.payload
+         const {orderId,shopId,status,assignedDeliveryBoy} = action.payload
          const order = state.myOrders.find(o=>o._id==orderId)
          if(order){
             const shopOrder = order.shopOrders.find(so=>so.shop._id==shopId)
             if(shopOrder){
                shopOrder.status=status
+               if(assignedDeliveryBoy){
+                 shopOrder.assignedDeliveryBoy = assignedDeliveryBoy
+               }
             }
          }
         },

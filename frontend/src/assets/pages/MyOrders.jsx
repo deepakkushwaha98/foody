@@ -1,12 +1,10 @@
 import React, { useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { IoMdArrowBack } from "react-icons/io";
-import { data, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import UserOrderCard from '../../components/UserOrderCard';
 import OwnerOrderCard from '../../components/OwnerOrderCard';
-import { useDispatch } from 'react-redux';
-import { setMyOrders } from '../../redux/userSlice';
-import { updateRealTimeOrderStatus } from '../../redux/userSlice';
+import { setMyOrders, updateRealTimeOrderStatus } from '../../redux/userSlice';
 
 const MyOrders = () => {
   const {userData , myOrders , socket} = useSelector(state=>state.user)
@@ -22,13 +20,12 @@ const MyOrders = () => {
 
     
   socket?.on('update-status' , (statusData)=>{
-    if(String(statusData?.userId) === String(userData?._id)){
       dispatch(updateRealTimeOrderStatus({
         orderId: statusData.orderId,
         shopId: statusData.shopId,
-        status: statusData.status
+        status: statusData.status,
+        assignedDeliveryBoy: statusData.assignedDeliveryBoy
       }))
-    }
   })
 
     return ()=>{
