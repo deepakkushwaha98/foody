@@ -6,7 +6,9 @@ import CartItemCart from '../../components/CartItemCart';
 
 const CartPage = () => {
   const navigate = useNavigate()
-  const {cartItems , totalAmount} = useSelector(state=>state.user)
+  const { cartItems } = useSelector(state => state.user)
+  const { totalAmount } = useSelector(state => state.user)
+  console.log('CartPage render cartItems', cartItems)
   return (
     <div className='min-h-screen bg-[#fff9f6] flex justify-center p-6 '>
         <div className='w-full max-w-[800px] '>
@@ -17,7 +19,7 @@ const CartPage = () => {
                <h1 className='text-2xl font-semibold text-start'> Cart Page</h1>
            </div>
            {cartItems?.length ===0 ? (
-            <p className='text-gray-500 '> Your Cart is Empty</p>
+            <p className='text-gray-500 '>Your cart is empty. Add items from this outlet to continue.</p>
 
            ):(
             <>
@@ -39,8 +41,8 @@ const CartPage = () => {
               </div>
 
               <div className='mt-4 flex justify-end' onClick={()=>navigate("/checkout")}>
-                 <button className='bg-[#ff4d2d] cursor-pointer text-white px-6 py-3 rounded-lg text-lg
-                 font-medium hover:bg-[#e64526] transition '>Proceed to CheckOut</button>
+                  <button className='bg-[#ff4d2d] cursor-pointer text-white px-6 py-3 rounded-lg text-lg
+                  font-medium hover:bg-[#e64526] transition '>Proceed to Checkout</button>
               </div>
             </>
 

@@ -21,6 +21,7 @@ import useGetMyOrder from "./hooks/UseGetMyOrder.jsx";
 import useUpdateLocation from "./hooks/useUpdateLocation.jsx";
 import TrackOrderPage from "./components/TrackOrderPage.jsx";
 import Shop from "./assets/pages/Shop.jsx";
+import CartDrawer from "./components/CartDrawer.jsx";
 import { useEffect } from "react";
 import { addMyOrder, updateRealTimeOrderStatus } from "./redux/userSlice.js";
 import { SocketProvider, useSocket } from "./context/SocketContext.jsx";
@@ -74,22 +75,25 @@ function AppContent() {
   }, [socket, dispatch]);
 
   return (
-    <Routes>
-      <Route path='/signup' element={!userData?<SignUp/>: <Navigate to={"/"}/> } />
-      <Route path='/signin' element={!userData?<SignIn/> : <Navigate to={"/"}/>}/>
-      <Route path='/forget-password' element={!userData?<Forgetpasswordd/> : <Navigate to={"/"}/>} />
-      <Route path="/" element={userData?<Home/> :<Navigate to={"/signin"}/>} />
-      <Route path="/creat-edit-shop" element={userData?<CreatEditShop/> :<Navigate to={"/signin"}/>} />  
-      <Route path="/add-item" element={userData?<AddItems/> :<Navigate to={"/signin"}/>} />   
-      <Route path="/edit-item/:itemId" element={userData?<EditItem/> :<Navigate to={"/signin"}/>} /> 
-      <Route path="/cart" element={userData?<CartPage/> :<Navigate to={"/signin"}/>} /> 
-       <Route path="/checkout" element={userData?<CheckOut/> :<Navigate to={"/signin"}/>} /> 
-        <Route path="/order-placed" element={userData?<OrderPlaced/> :<Navigate to={"/signin"}/>} /> 
-        <Route path="/order-success" element={userData?<OrderPlaced/> :<Navigate to={"/signin"}/>} /> 
-        <Route path="/my-orders" element={userData?<MyOrders/> :<Navigate to={"/signin"}/>} /> 
-      <Route path="/track-order/:orderId" element={userData?<TrackOrderPage/> :<Navigate to={"/signin"}/>} />
-      <Route path="/shop/:shopId" element={userData?<Shop/> :<Navigate to={"/signin"}/>} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path='/signup' element={!userData?<SignUp/>: <Navigate to={"/"}/> } />
+        <Route path='/signin' element={!userData?<SignIn/> : <Navigate to={"/"}/>}/>
+        <Route path='/forget-password' element={!userData?<Forgetpasswordd/> : <Navigate to={"/"}/>} />
+        <Route path="/" element={userData?<Home/> :<Navigate to={"/signin"}/>} />
+        <Route path="/creat-edit-shop" element={userData?<CreatEditShop/> :<Navigate to={"/signin"}/>} />  
+        <Route path="/add-item" element={userData?<AddItems/> :<Navigate to={"/signin"}/>} />   
+        <Route path="/edit-item/:itemId" element={userData?<EditItem/> :<Navigate to={"/signin"}/>} /> 
+        <Route path="/cart" element={userData?<CartPage/> :<Navigate to={"/signin"}/>} /> 
+         <Route path="/checkout" element={userData?<CheckOut/> :<Navigate to={"/signin"}/>} /> 
+          <Route path="/order-placed" element={userData?<OrderPlaced/> :<Navigate to={"/signin"}/>} /> 
+          <Route path="/order-success" element={userData?<OrderPlaced/> :<Navigate to={"/signin"}/>} /> 
+          <Route path="/my-orders" element={userData?<MyOrders/> :<Navigate to={"/signin"}/>} /> 
+        <Route path="/track-order/:orderId" element={userData?<TrackOrderPage/> :<Navigate to={"/signin"}/>} />
+        <Route path="/shop/:shopId" element={userData?<Shop/> :<Navigate to={"/signin"}/>} />
+      </Routes>
+      <CartDrawer />
+    </>
   );
 }
 

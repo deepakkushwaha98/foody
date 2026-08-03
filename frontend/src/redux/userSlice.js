@@ -2,6 +2,14 @@ import { createSlice } from "@reduxjs/toolkit"
 
 const CART_STORAGE_KEY = "foody-cart-state"
 
+const getStoredFlag = (key) => {
+   try {
+      return typeof window !== "undefined" && window.localStorage.getItem(key) === "true"
+   } catch {
+      return false
+   }
+}
+
 const loadCartState = () => {
    try {
       const raw = localStorage.getItem(CART_STORAGE_KEY)
@@ -20,11 +28,13 @@ const loadCartState = () => {
 
 const persistedCart = typeof window !== "undefined" ? loadCartState() : { cartItems: [], totalAmount: 0, cartOutletId: null, cartOutletName: null }
 
-
 const userSlice = createSlice({
     name:"user",
     initialState:{
         userData:null,
+      isCartDrawerOpen:false,
+      hideMultipleOrdersBanner:getStoredFlag('hideMultipleOrdersBanner'),
+      hideOneOutletBanner:getStoredFlag('hideOneOutletBanner'),
         currentCity:null,
         currentState:null,
         currentAddress:null,
@@ -42,6 +52,18 @@ const userSlice = createSlice({
     reducers:{
         setUserData:(state , action) =>{
            state.userData = action.payload
+        },
+        openCartDrawer:(state) =>{
+           state.isCartDrawerOpen = true
+        },
+        closeCartDrawer:(state) =>{
+           state.isCartDrawerOpen = false
+        },
+        dismissMultipleOrdersBanner:(state) =>{
+           state.hideMultipleOrdersBanner = true
+        },
+        dismissOneOutletBanner:(state) =>{
+           state.hideOneOutletBanner = true
         },
         setCurrentCity:(state , action) =>{
            state.currentCity = action.payload
@@ -85,7 +107,7 @@ const userSlice = createSlice({
          const {id,quantity} = action.payload
          const item = state.cartItems.find(i=>i.id==id)
          if(item){
-            item.quantity=quantity
+            item.quantity = Math.min(99, Math.max(1, Number(quantity) || 1))
          }
           state.totalAmount = state.cartItems.reduce(
   (sum, i) => sum + i.price * i.quantity,
@@ -171,5 +193,5 @@ const userSlice = createSlice({
     }
 })
 
-export const {setUserData,updateRealTimeOrderStatus, updateOrderStatus ,setSearchItems,setMyOrders,addMyOrder , setCurrentCity, removeCartItem , clearCart, setCartFromServer, setCurrentState , setCurrentAddress , setShopInMyCity , setItemInMyCity, updateQuantity ,addToCart} = userSlice.actions
+export const {setUserData, openCartDrawer, closeCartDrawer, dismissMultipleOrdersBanner, dismissOneOutletBanner, updateRealTimeOrderStatus, updateOrderStatus ,setSearchItems,setMyOrders,addMyOrder , setCurrentCity, removeCartItem , clearCart, setCartFromServer, setCurrentState , setCurrentAddress , setShopInMyCity , setItemInMyCity, updateQuantity ,addToCart} = userSlice.actions
 export default userSlice.reducer
