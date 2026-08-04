@@ -93,23 +93,24 @@ const SignUp = () => {
             <h1 className={`text-3xl font-bold mb-2`} style={{color:primaryColor}}>FOODY</h1>
             <p>“Create an account to order your favorite food in minutes."</p>
 
+            <form autoComplete="on">
             <div className='mb-4'>
                 <label htmlFor="fullName" className='block text-gray-700 font-medium mb-1'>fullName</label>
-                <input type="text" required className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500' placeholder='enter fullname'
+              <input id="fullName" type="text" name="name" autoComplete="name" required className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500' placeholder='enter fullname'
                 style={{ border: `1px solid ${borderColor}` }} value={fullName} onChange={(e) => setFullName(e.target.value)}  />
             </div>
 
 
              <div className='mb-4'>
                 <label htmlFor="email" className='block text-gray-700 font-medium mb-1'>email:</label>
-                <input type="text" value={email} required onChange={(e) =>setEmail(e.target.value)} className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500'  placeholder='enter email' style={{ border: `1px solid ${borderColor}` }} />
+               <input id="email" type="email" name="email" autoComplete="email" value={email} required onChange={(e) =>setEmail(e.target.value)} className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500'  placeholder='enter email' style={{ border: `1px solid ${borderColor}` }} />
             </div>
 
 
 
              <div className='mb-4'>
                 <label htmlFor="mobile" className='block text-gray-700 font-medium mb-1'>mobile:</label>
-                <input type="text" className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500' 
+               <input id="mobile" type="tel" name="tel" autoComplete="tel" className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500' 
                 placeholder='enter your mobile no:' required style={{ border: `1px solid ${borderColor}` }}  value={mobile} onChange={(e)=> setMobile(e.target.value)}/>
 
 
@@ -119,7 +120,7 @@ const SignUp = () => {
              <div className='mb-4'>
                 <label htmlFor="password" className='block text-gray-700 font-medium mb-1'>password</label>
                 <div className='relative'>
-                    <input type={showPassword? "text": "password"} value={password} required onChange={(e) => setPpassword(e.target.value)} className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500' placeholder='enter password' style={{ border: `1px solid ${borderColor}` }} />
+                <input id="password" type={showPassword? "text": "password"} name="new-password" autoComplete="new-password" value={password} required onChange={(e) => setPpassword(e.target.value)} className='w-full border rounded-lg px-3 py-2 focus-outline-none focus:border-orange-500' placeholder='enter password' style={{ border: `1px solid ${borderColor}` }} />
                     <button type="button" className='absolute right-3 top-[14px] text-gray-500 ' onClick={toggle}>{ showPassword ? <FaEye/> : <FaEyeSlash/>}</button>
                </div>
                
@@ -141,7 +142,7 @@ const SignUp = () => {
                
              </div>
 
-             <button className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handleSignUp} disabled={loading}>
+             <button type="button" className="w-full mt-4 py-2 rounded-lg bg-[#de5b44]  hover:bg-[#e64323] cursor-pointer text-white transition" onClick={handleSignUp} disabled={loading}>
              {loading?<ClipLoader size={20}/> : "Sign Up" }
              
             </button>
@@ -149,9 +150,10 @@ const SignUp = () => {
             {err && <p className='text-red-500 text-center mt-4'>{err}</p>}
 
 
-            <button className='w-full mt-4 flex items-center py-2 justify-center gap-2 px-4 transition duration-200 border rounded-lg 
+            <button type="button" className='w-full mt-4 flex items-center py-2 justify-center gap-2 px-4 transition duration-200 border rounded-lg 
              border-gray-400 hover:bg-gray-100' onClick={handleGoogleAuth} >< FcGoogle size={20} />Sign Up with google</button>
                  <p  className='text-center mt-6 cursor-pointer' onClick={()=> navigate("/signin")} >Already have an account ? <span className='text-[#ff4d2d]'>Sign in</span> </p>
+            </form>
         </div>
      
     </div>

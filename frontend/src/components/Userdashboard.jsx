@@ -8,6 +8,7 @@ import { FaAnglesRight } from "react-icons/fa6";
 import { useSelector } from 'react-redux';
 import FoodCard from './FoodCard';
 import { serverUrl } from '../App'
+import CartPanel from './CartPanel';
 const Userdashboard = () => {
   const cateScrollRef = useRef()
   const navigate = useNavigate()
@@ -151,16 +152,22 @@ const Userdashboard = () => {
 
          </div>
 
-          <div className='w-full max-w-6xl flex flex-col  gap-5 px-12 items-center p-[10px] '>
-            <h1 className='text-gray-800 text-2xl items-start  sm:text-3xl'> Suggested Food Items</h1>
+          <div className='mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:pr-[420px]'>
+            <main className='min-w-0'>
+                <div className='flex flex-col gap-5 items-center p-[10px]'>
+                  <h1 className='text-gray-800 text-2xl items-start sm:text-3xl'> Suggested Food Items</h1>
 
-            <div className='w-full h-auto flex flex-wrap gap-[20px] justify-center'>
-              {updatedItemList && updatedItemList.length > 0 && updatedItemList.map((item , idx)=>(
-                <FoodCard key={idx} data={item} />
-              ))}
+                  <div className='w-full h-auto flex flex-wrap gap-[20px] justify-center'>
+                    {updatedItemList && updatedItemList.length > 0 && updatedItemList.map((item , idx)=>(
+                      <FoodCard key={idx} data={item} />
+                    ))}
+                  </div>
+                </div>
+            </main>
+          </div>
 
-            </div>
-
+          <div className='fixed right-6 top-20 z-30 hidden h-[calc(100vh-6rem)] w-[380px] overflow-hidden rounded-[2rem] border border-[#ffd7c8] bg-white/95 p-4 shadow-[0_24px_70px_rgba(255,124,77,0.12)] backdrop-blur lg:block'>
+            <CartPanel />
           </div>
      </div>
   )

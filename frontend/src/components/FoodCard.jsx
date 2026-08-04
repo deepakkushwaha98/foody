@@ -3,7 +3,7 @@ import { FaLeaf, FaDrumstickBite, FaStar, FaCartPlus } from "react-icons/fa";
 import { IoIosStarOutline } from "react-icons/io";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux"
-import { addToCart, clearCart } from '../redux/userSlice';
+import { addToCart, clearCart, openCartDrawer } from '../redux/userSlice';
 
 const FoodCard = ({ data, shopId, shopName }) => {
   const dispatch = useDispatch();
@@ -52,7 +52,7 @@ const FoodCard = ({ data, shopId, shopName }) => {
       return
     }
 
-    dispatch(addToCart({
+    const payload = {
       id: data._id,
       name: data.name,
       price: Number(data.price),
@@ -62,7 +62,12 @@ const FoodCard = ({ data, shopId, shopName }) => {
       shopName: resolvedOutletName,
       quantity,
       foodType: data.foodType,
-    }))
+    }
+
+    dispatch(addToCart(payload))
+    if (window.innerWidth < 1024) {
+      dispatch(openCartDrawer())
+    }
     setQuantity(0)
     setMessage('Added to cart successfully.')
     clearMessage()
@@ -70,7 +75,7 @@ const FoodCard = ({ data, shopId, shopName }) => {
 
   const handleClearAndContinue = () => {
     dispatch(clearCart())
-    dispatch(addToCart({
+    const payload = {
       id: data._id,
       name: data.name,
       price: Number(data.price),
@@ -80,7 +85,12 @@ const FoodCard = ({ data, shopId, shopName }) => {
       shopName: resolvedOutletName,
       quantity,
       foodType: data.foodType,
-    }))
+    }
+
+    dispatch(addToCart(payload))
+    if (window.innerWidth < 1024) {
+      dispatch(openCartDrawer())
+    }
     setQuantity(0)
     setShowOutletModal(false)
     setMessage('Added to cart successfully.')
