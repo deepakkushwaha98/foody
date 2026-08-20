@@ -159,8 +159,6 @@ export const sendOtp = async (req, res) => {
     user.otpExpiry = Date.now() + 5 * 60 * 1000;
     user.isOtpVerified = false;
 
-    console.log('Generated OTP for', email, otp);
-
     await user.save();
     await sendOtpMail(user.email, otp);
 
@@ -206,12 +204,15 @@ export const verifyOtp = async (req,res) =>{
 export const resetPassword = async (req,res) =>{
     try{
         const { email , newPassword} = req.body;
-        console.log('RESET PASSWORD request', { email });
         const user = await User.findOne({email})
-        console.log('Found user for reset:', user ? { id: user._id, isOtpVerified: user.isOtpVerified } : null);
-         if(!user || !user.isOtpVerified){
+
+            if(!user || !user.isOtpVerified){
             return res.status(400).json({message:"otp not verified"})
          }
+
+            if(!newPassword || newPassword.length < 6){
+                return res.status(400).json({message: "Password should be at least 6 characters."})
+            }
 
             const hashedPassword = await bcrypt.hash(newPassword , 10);
 
@@ -219,7 +220,6 @@ export const resetPassword = async (req,res) =>{
             user.isOtpVerified = false;
 
             await user.save();
-            console.log('Password reset successful for', user._id);
             return res.status(200).json({ message: "Password reset successful" });
 
         } 

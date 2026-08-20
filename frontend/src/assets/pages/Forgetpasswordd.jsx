@@ -21,19 +21,20 @@ const Forgetpasswordd = () => {
     const [loading , setLoading] = useState(false)
     
     const [err , setErr] = useState("")
+    const [successMsg , setSuccessMsg] = useState("")
 
     const handleSendOtp =async () =>{
       setLoading(true);
       try{
 
-        const result = await axios.post(`${serverUrl}/api/auth/send-otp` , {email},
+        await axios.post(`${serverUrl}/api/auth/send-otp` , {email},
         { withCredentials: true }
 
         )
 
-        console.log(result);
-        setStep(2);
         setErr("")
+        setSuccessMsg("OTP sent to your email")
+        setStep(2);
         setLoading(false);
         
         
@@ -42,6 +43,7 @@ const Forgetpasswordd = () => {
       catch(err){
         console.error('sendOtp error:', err.response?.data || err.message)
         setErr(err.response.data.message)
+        setSuccessMsg("")
         setLoading(false);
 
       }
@@ -53,14 +55,14 @@ const Forgetpasswordd = () => {
       setLoading(true);
       try{
 
-        const result = await axios.post(`${serverUrl}/api/auth/verify-otp` , {email ,otp},
+        await axios.post(`${serverUrl}/api/auth/verify-otp` , {email ,otp},
           { withCredentials: true }
 
         )
 
-        console.log(result);
         setStep(3);
         setErr("")
+        setSuccessMsg("")
         setLoading(false);
         
         
@@ -69,6 +71,7 @@ const Forgetpasswordd = () => {
       catch(err){
         console.error('verifyOtp error:', err.response?.data || err.message)
         setErr(err?.response.data.message)
+        setSuccessMsg("")
         setLoading(false);
       }
 
@@ -77,18 +80,27 @@ const Forgetpasswordd = () => {
 
 
      const handlerResetPassword =async () =>{
+      setErr("");
+      setSuccessMsg("");
+
+      if(newPassword !== confirmPassword){
+        setErr("Passwords do not match.");
+        return;
+      }
+
+      if(newPassword.length < 6){
+        setErr("Password should be at least 6 characters.");
+        return;
+      }
+
       setLoading(true);
-        if(newPassword != confirmPassword){
-          return null;
-        }
       try{
 
-        const result = await axios.post(`${serverUrl}/api/auth/reset-password` , {email, newPassword},
+        await axios.post(`${serverUrl}/api/auth/reset-password` , {email, newPassword},
        { withCredentials: true }
 
         )
 
-        console.log(result);
         setStep(3);
         navigate("/signin")
         setLoading(false);
@@ -99,6 +111,7 @@ const Forgetpasswordd = () => {
       catch(err){
         console.error('resetPassword error:', err.response?.data || err.message)
         setErr(err?.response.data.message) 
+        setSuccessMsg("")
         setLoading(false);
       }
 
@@ -115,6 +128,10 @@ const Forgetpasswordd = () => {
              <IoArrowBack size={20} className="text-[#ff4d3d] mb-4 cursor-pointer" onClick={()=> navigate("/signin")} />
          <h1 className="text-2xl text-[#ff4d2d] font-bold mb-4">Forget Password</h1>
           </div>
+
+         {successMsg && (
+          <p className='text-green-600 text-center mb-4'>{successMsg}</p>
+         )}
 
           {step === 1 && (
             <div>
