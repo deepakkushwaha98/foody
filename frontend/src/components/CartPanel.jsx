@@ -1,6 +1,7 @@
 import React from 'react'
 import { FaTrash, FaCreditCard, FaShieldAlt } from 'react-icons/fa'
 import { FaMinus, FaPlus } from 'react-icons/fa6'
+import { IoCartOutline } from 'react-icons/io5'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { clearCart, closeCartDrawer, dismissMultipleOrdersBanner, dismissOneOutletBanner, removeCartItem, updateQuantity } from '../redux/userSlice'
@@ -140,8 +141,24 @@ const CartPanel = () => {
             </button>
           </>
         ) : (
-          <div className='rounded-[1.6rem] border border-dashed border-[#ffd4c5] bg-[#fff7f2] p-6 text-center text-sm text-slate-500'>
-            Your cart is empty. Add items from this outlet to continue.
+          <div className='flex h-full min-h-[420px] flex-col'>
+            <div className='mt-8 flex flex-1 flex-col items-center justify-center rounded-[1.6rem] border border-dashed border-[#ffd4c5] bg-[#fff7f2] p-6 text-center'>
+              <div className='mb-5 flex h-20 w-20 items-center justify-center rounded-full border border-[#ffd9cb] bg-white text-[#ff5b34] shadow-sm'>
+                <IoCartOutline size={34} />
+              </div>
+              <h4 className='text-lg font-bold text-slate-900'>Your cart is empty</h4>
+              <p className='mt-2 max-w-[230px] text-sm leading-6 text-slate-500'>Add items from the menu to continue.</p>
+              <button
+                type='button'
+                onClick={() => {
+                  dispatch(closeCartDrawer())
+                  navigate('/')
+                }}
+                className='mt-6 w-full max-w-[240px] rounded-2xl bg-[#ff5b34] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(255,91,52,0.30)] transition hover:bg-[#eb4a29]'
+              >
+                View Menu
+              </button>
+            </div>
           </div>
         )}
       </div>

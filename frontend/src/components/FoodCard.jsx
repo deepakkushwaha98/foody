@@ -99,8 +99,8 @@ const FoodCard = ({ data, shopId, shopName }) => {
 
   return (
     <>
-      <div className='w-[250px] rounded-2xl border-2 border-[#ff4d2d] bg-white shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col'>
-        <div className='relative w-full h-[170px] flex justify-center items-center bg-white'>
+      <div className='w-full rounded-2xl border border-[#ffd3c4] bg-white shadow-[0_10px_24px_rgba(0,0,0,0.08)] overflow-hidden hover:-translate-y-0.5 hover:shadow-[0_16px_34px_rgba(0,0,0,0.12)] transition-all duration-300 flex flex-col'>
+        <div className='relative w-full h-[168px] flex justify-center items-center bg-white'>
           <div className='absolute top-3 right-3 bg-white rounded-full p-1 shadow '>
             {data.foodType === 'veg' ? <FaLeaf className='text-green-600 text-lg' /> : <FaDrumstickBite className='text-red-600 ' />}
           </div>
@@ -112,7 +112,7 @@ const FoodCard = ({ data, shopId, shopName }) => {
           <h1 className='font-semibold text-gray-900 text-base truncate'>{data.name}</h1>
           <div className='flex items-center gap-1 mt-1'>
             {renderStars(data.rating?.average || 0)}
-            <span>{data.rating?.count || 0}</span>
+            <span className='text-xs text-slate-500'>({data.rating?.count || 0})</span>
           </div>
 
           {data.description && (
@@ -122,27 +122,30 @@ const FoodCard = ({ data, shopId, shopName }) => {
           )}
         </div>
 
-        <div className='flex items-center justify-between mt-auto p-4'>
-          <span className='font-bold text-gray-900 text-lg'>
-            {data.price}
-          </span>
+        <div className='mt-auto border-t border-[#f8e2d8] p-4'>
+          <div className='mb-3 flex items-center justify-between'>
+            <span className='font-bold text-gray-900 text-lg'>
+              ₹ {data.price}
+            </span>
+            <div className='flex items-center rounded-full overflow-hidden shadow-sm border border-[#f1e3dc]'>
+              <button className='px-3 py-2 hover:bg-gray-100 transition' onClick={handleDecrease}>
+                <FaMinus size={12} />
+              </button>
 
-          <div className='flex items-center rounded-full overflow-hidden shadow-sm border border-[#f1f1f1]'>
-            <button className='px-3 pt-1 hover:bg-gray-100 transition' onClick={handleDecrease}>
-              <FaMinus size={14} />
-            </button>
+              <span className='min-w-[2rem] text-center text-sm font-semibold'>{quantity}</span>
 
-            <span className='min-w-[2rem] text-center text-sm font-semibold'>{quantity}</span>
-
-            <button className='px-3 pt-1 hover:bg-gray-100 transition' onClick={handleIncrease}>
-              <FaPlus size={14} />
-            </button>
-
-            <button className={`${isInCart ? "bg-[#2aa56c]" : "bg-[#ff4d2d]"} text-white px-4 py-2 transition-colors`} onClick={handleAddToCart}>
-              <FaCartPlus size={16} />
-            </button>
+              <button className='px-3 py-2 hover:bg-gray-100 transition' onClick={handleIncrease}>
+                <FaPlus size={12} />
+              </button>
+            </div>
           </div>
+
+          <button className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-colors ${isInCart ? 'bg-[#2aa56c] hover:bg-[#23955f]' : 'bg-[#ff5d38] hover:bg-[#eb4f2b]'}`} onClick={handleAddToCart}>
+            <FaCartPlus size={15} />
+            {isInCart ? 'Add More' : 'Add to Cart'}
+          </button>
         </div>
+
       </div>
 
       {message ? (

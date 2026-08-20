@@ -63,8 +63,8 @@ const Shop = () => {
                                     Our Menu
                             </h2>
 
-                            {items && items.length > 0 ? (
-                                    <div className='flex flex-wrap justify-center gap-6'>
+                                {items && items.length > 0 ? (
+                                    <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3'>
                                             {items.map((item) => (
                                                     <FoodCard key={item._id || item.id} data={item} shopId={shopId} shopName={shop?.name} />
                                             ))}

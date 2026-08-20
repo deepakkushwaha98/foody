@@ -1,6 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --foody-bg: #fff9f5;
+    --foody-card: #ffffff;
+    --foody-accent: #ff5d38;
+    --foody-text: #0f172a;
+}
+
+body {
+    font-family: 'Sora', sans-serif;
+    background-color: var(--foody-bg);
+    color: var(--foody-text);
+}
 
 
 
