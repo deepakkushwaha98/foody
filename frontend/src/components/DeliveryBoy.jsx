@@ -1,21 +1,24 @@
 import React from 'react'
 import axios from 'axios'
 import Nav from './Nav'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { serverUrl } from '../App'
 import { useEffect ,useState} from 'react'
 import { FaAssistiveListeningSystems } from 'react-icons/fa'
 import useGetCurrentUser from '../hooks/useGetCurrentUser'
 import DeliveryBoyTracking from './DeliveryBoyTracking'
 import { useSocket } from '../context/SocketContext'
+import { decrementAvailableDeliveryOrders, incrementAvailableDeliveryOrders, setAvailableDeliveryOrders } from '../redux/userSlice'
 
 const DeliveryBoy = () => {
   const [otp , setOtp] = useState("")
   const [shopOtpBox , setShopOtpBox] = useState(false);
   const { userData } = useSelector(state => state.user)
+  const dispatch = useDispatch()
   const { socket } = useSocket()
   const [currentOrder , setCurrentOrder] = useState();
   const [availableAssignment, setAvailableAssignment] = useState(null)
+  const [actionLoading, setActionLoading] = useState(false)
    
   const [deliveryBoyLocation, setDeliveryBoyLocation] = useState(null)
    
@@ -59,6 +62,7 @@ const DeliveryBoy = () => {
       )
       console.log(result.data)
       setAvailableAssignment(result.data)
+      dispatch(setAvailableDeliveryOrders(result.data.length))
 
     }
     catch(err){
@@ -95,18 +99,26 @@ const DeliveryBoy = () => {
 
 
  const acceptOrder = async(assignmentId)=>{
+  if(actionLoading) return
+  setActionLoading(true)
   try{
     const result = await axios.get(`${serverUrl}/api/order/accept-order/${assignmentId}` ,{withCredentials:true})
     console.log(result.data)
     await getCurrentOrder();
+    setAvailableAssignment(prev => (prev || []).filter(item => String(item.assignmentId) !== String(assignmentId)))
+    dispatch(decrementAvailableDeliveryOrders())
   }
   catch(err){
     console.log(err);
+  } finally {
+    setActionLoading(false)
   }
  }
 
 
   const sendOtp = async()=>{
+    if(actionLoading || !currentOrder) return
+    setActionLoading(true)
   try{
     const result = await axios.post(`${serverUrl}/api/order/send-delivery-otp`, {
       orderId: currentOrder?._id,
@@ -117,11 +129,15 @@ const DeliveryBoy = () => {
   }
   catch(err){
     console.log(err);
+  } finally {
+    setActionLoading(false)
   }
  }
 
 
  const verifyOtp = async()=>{
+  if(actionLoading || !currentOrder || !otp.trim()) return
+  setActionLoading(true)
   try{
     const result = await axios.post(`${serverUrl}/api/order/verify-delivery-otp`, {
       orderId: currentOrder?._id,
@@ -130,11 +146,14 @@ const DeliveryBoy = () => {
     }, { withCredentials: true })
 
     console.log(result.data)
-    // Refresh current order state after verification
-    await getCurrentOrder()
+    setCurrentOrder(null)
+    setShopOtpBox(false)
+    setOtp("")
   }
   catch(err){
     console.log(err);
+  } finally {
+    setActionLoading(false)
   }
  }
 
@@ -147,6 +166,7 @@ const DeliveryBoy = () => {
     if(data.sentTO === userData?._id || String(data.sentTO) === String(userData?._id)){
       console.log("Assignment is for this delivery boy, adding to available");
       setAvailableAssignment(prev => prev ? [...prev, data] : [data])
+      dispatch(incrementAvailableDeliveryOrders())
     }
   }
 
@@ -169,7 +189,7 @@ const DeliveryBoy = () => {
    }
 
 
- }, [socket, userData, currentOrder])
+ }, [socket, userData, currentOrder, dispatch])
 
 
 
@@ -237,8 +257,8 @@ const DeliveryBoy = () => {
                    <p className='text-xs text-gray-400'>{assignment.items.length} items | {assignment.subtotal} </p>
                   </div>
 
-                  <button className='bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors' onClick={()=>acceptOrder(assignment.assignmentId)}>
-                    Accept
+                  <button disabled={actionLoading} className='bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors disabled:cursor-not-allowed disabled:opacity-60' onClick={()=>acceptOrder(assignment.assignmentId)}>
+                    {actionLoading ? 'Please wait...' : 'Accept'}
                   </button>
                   
 
@@ -275,11 +295,11 @@ const DeliveryBoy = () => {
                     lon: currentOrder?.deliveryAddress?.longitude ?? null
                   }
                 }} />
-          {!shopOtpBox ?<button className='mt-4 bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 active:scale-95 transition-all duration-200 ' onClick={sendOtp}>
-            Mark as Delivered</button>: <div className='mt-4 p-4 border rounded-xl bg-gray-50'>
+          {!shopOtpBox ?<button disabled={actionLoading} className='mt-4 bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 active:scale-95 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60' onClick={sendOtp}>
+            {actionLoading ? 'Sending OTP...' : 'Mark as Delivered'}</button>: <div className='mt-4 p-4 border rounded-xl bg-gray-50'>
               <p>Enter Otp send to <span className='text-orange-500'>{currentOrder.user.fullName}</span>  </p>
               <input type="text" className='w-full border px-3 py-2 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-orange-400 ' placeholder='Enter Otp' value={otp} onChange={(e)=>setOtp(e.target.value)}/>
-              <button className='w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 active:scale-95 transition-all duration-200 ' onClick={verifyOtp}>Submit OTP</button>
+              <button disabled={actionLoading || !otp.trim()} className='w-full bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 active:scale-95 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60' onClick={verifyOtp}>{actionLoading ? 'Verifying...' : 'Submit OTP'}</button>
            </div>
            }
         </div> }

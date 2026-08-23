@@ -220,7 +220,7 @@ const Userdashboard = () => {
 
   useEffect(() => {
     const runAnimation = (currentTime) => {
-      if (!categoryTrackRef.current || !isCategoryHovered) {
+      if (!categoryTrackRef.current || isCategoryHovered) {
         previousTimeRef.current = currentTime
         animationRef.current = window.requestAnimationFrame(runAnimation)
         return

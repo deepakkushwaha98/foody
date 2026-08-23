@@ -221,6 +221,50 @@ export const getMyOrders = async (req,res)=>{
 
 
          }
+         else if(user.role == "deliveryBoy"){
+             const orders = await Order.find({
+                 shopOrders: {
+                     $elemMatch: {
+                         assignedDeliveryBoy:req.userId,
+                         status:"delivered"
+                     }
+                 }
+             })
+             .sort({createdAt:-1})
+             .populate({
+                 path: 'shopOrders.shop',
+                 select: 'name'
+             })
+             .populate({
+                 path: 'user',
+                 select: 'fullName mobile'
+             })
+             .populate({
+                 path: 'shopOrders.shopOrderItem.item',
+                 select: 'name image price'
+             })
+
+             const deliveryOrders = orders.flatMap(order => order.shopOrders
+                 .filter(shopOrder =>
+                     String(shopOrder.assignedDeliveryBoy) === String(req.userId) &&
+                     shopOrder.status === "delivered"
+                 )
+                 .map(shopOrder => ({
+                     _id:order._id,
+                     user:order.user,
+                     paymentMethod:order.paymentMethod,
+                     deliveryAddress:order.deliveryAddress,
+                     createdAt:order.createdAt,
+                     shopOrder
+                 }))
+             )
+
+             return res.status(200).json({
+                 orders: deliveryOrders,
+                 completedDeliveries: deliveryOrders.length,
+                 totalEarnings: deliveryOrders.length * 50
+             })
+         }
        
     }
     catch(err){
@@ -409,6 +453,10 @@ export const updateOrderStatus = async (req,res)=>{
 
        }
 
+    if(shopOrder.status === "out of delivery"){
+     return res.status(400).json({message:"order status is locked while out for delivery"})
+    }
+
        shopOrder.status = status
 
        // Track delivery timestamp when order is marked as delivered
@@ -416,7 +464,8 @@ export const updateOrderStatus = async (req,res)=>{
          shopOrder.deliveredAt = new Date()
        }
 
-       let deliveryBoysPayload = []
+    let deliveryBoysPayload = []
+    let deliveryAssignmentId = shopOrder.assignment
     if(status=="out of delivery"){
      if(status =="out of delivery" && !shopOrder.assignment){
           // Find and assign delivery boys
@@ -486,6 +535,7 @@ export const updateOrderStatus = async (req,res)=>{
                    
 
                    shopOrder.assignment = newDeliveryAssignment._id
+                   deliveryAssignmentId = newDeliveryAssignment._id
                    deliveryBoysPayload = avialableBoys.map(d=>({
                        id:d._id,
                        fullName:d.fullName,
@@ -514,13 +564,14 @@ export const updateOrderStatus = async (req,res)=>{
                 // e.g. await newDeliveryAssignment?.populate('order')
 
                 if(io && deliveryBoysPayload.length > 0){
+                    await order.populate("shopOrders.shop", "name")
                     console.log("📡 Emitting newAssignment to", deliveryBoysPayload.length, "delivery boys")
                     deliveryBoysPayload.forEach(boy=>{
                         const boySocketId = boy.socketId
                         if(boySocketId){
                             io.to(boySocketId).emit("newAssignment" , {
                                 sentTO:boy.id,
-                                assignmentId:DeliveryAssignment?._id,
+                                assignmentId:deliveryAssignmentId,
                                 orderId:order._id,
                                 shopName:shopOrder.shop?.name,
                                 deliveryAddress:order.deliveryAddress,
@@ -681,35 +732,37 @@ export  const acceptOrder = async(req,res)=>{
         shopOrder.assignedDeliveryBoy = req.userId
         await order.save()
 
-        const io = req.app.get("io")
-        await order.populate("shopOrders.shop", "name")
-        await order.populate("shopOrders.assignedDeliveryBoy", "fullName mobile socketId")
-        await order.populate("user", "fullName email mobile socketId")
+                const io = req.app.get("io")
+                void (async()=>{
+                    await order.populate("shopOrders.shop", "name")
+                    await order.populate("shopOrders.assignedDeliveryBoy", "fullName mobile socketId")
+                    await order.populate("user", "fullName email mobile socketId")
 
-        if(io){
-          const ownerSocketId = shopOrder.owner?.socketId
-          if(ownerSocketId){
-            io.to(ownerSocketId).emit("update-status", {
-              orderId: order._id,
-              shopId: shopOrder.shop._id,
-              status: shopOrder.status,
-              assignedDeliveryBoy: order.shopOrders.id(shopOrder._id)?.assignedDeliveryBoy,
-              userId: order.user._id,
-            })
-          }
-          const userSocketId = order.user.socketId
-          if(userSocketId){
-            io.to(userSocketId).emit("update-status", {
-              orderId: order._id,
-              shopId: shopOrder.shop._id,
-              status: shopOrder.status,
-              assignedDeliveryBoy: order.shopOrders.id(shopOrder._id)?.assignedDeliveryBoy,
-              userId: order.user._id,
-            })
-          }
-        }
-         
-         return res.status(200).json({message:"order accepted successfully"})
+                    if(io){
+                        const ownerSocketId = shopOrder.owner?.socketId
+                        if(ownerSocketId){
+                            io.to(ownerSocketId).emit("update-status", {
+                                orderId: order._id,
+                                shopId: shopOrder.shop._id,
+                                status: shopOrder.status,
+                                assignedDeliveryBoy: order.shopOrders.id(shopOrder._id)?.assignedDeliveryBoy,
+                                userId: order.user._id,
+                            })
+                        }
+                        const userSocketId = order.user.socketId
+                        if(userSocketId){
+                            io.to(userSocketId).emit("update-status", {
+                                orderId: order._id,
+                                shopId: shopOrder.shop._id,
+                                status: shopOrder.status,
+                                assignedDeliveryBoy: order.shopOrders.id(shopOrder._id)?.assignedDeliveryBoy,
+                                userId: order.user._id,
+                            })
+                        }
+                    }
+                })().catch(err => console.error("accept order notification error:", err))
+
+                return res.status(200).json({message:"order accepted successfully"})
 
     }
     catch(err){
@@ -850,7 +903,9 @@ export const sendDeliveryOtp = async(req,res)=>{
 
         await order.save()
 
-        await sendDeliveryOtpMail(order.user, otp)
+        sendDeliveryOtpMail(order.user, otp).catch(err => {
+            console.error("delivery OTP email error:", err)
+        })
         
         return res.status(200).json({message:`OTP sent to successfuly to ${order.user.fullName}`})
 
@@ -885,37 +940,39 @@ export const verifyDeliveryOtp = async(req,res)=>{
         await order.save()
 
         
-        // Notify user and delivery boy in real-time
         const io = req.app.get("io")
-        if(io){
-          const userSocketId = order.user?.socketId
-          if(userSocketId){
-            io.to(userSocketId).emit("update-status", {
-              orderId: order._id,
-              shopId: shopOrder.shop._id,
-              status: shopOrder.status,
-              userId: order.user._id,
-            })
-          }
+                void (async()=>{
+                    if(io){
+                        const userSocketId = order.user?.socketId
+                        if(userSocketId){
+                            io.to(userSocketId).emit("update-status", {
+                                orderId: order._id,
+                                shopId: shopOrder.shop._id,
+                                status: shopOrder.status,
+                                userId: order.user._id,
+                            })
+                        }
 
-          if(shopOrder.assignedDeliveryBoy){
-            const deliveryBoy = await User.findById(shopOrder.assignedDeliveryBoy)
-            if(deliveryBoy?.socketId){
-              io.to(deliveryBoy.socketId).emit("update-status", {
-                orderId: order._id,
-                shopId: shopOrder.shop._id,
-                status: shopOrder.status,
-                userId: order.user._id,
-              })
-            }
-          }
-        }
+                        if(shopOrder.assignedDeliveryBoy){
+                            const deliveryBoy = await User.findById(shopOrder.assignedDeliveryBoy)
+                            if(deliveryBoy?.socketId){
+                                io.to(deliveryBoy.socketId).emit("update-status", {
+                                    orderId: order._id,
+                                    shopId: shopOrder.shop._id,
+                                    status: shopOrder.status,
+                                    userId: order.user._id,
+                                })
+                            }
+                        }
+                    }
 
-        await DeliveryAssignment.deleteOne({
-            shopOrderId:shopOrder._id,
-            order:order._id,
-            assignedTo:shopOrder.assignedDeliveryBoy
-       })
+                    await DeliveryAssignment.deleteOne({
+                            shopOrderId:shopOrder._id,
+                            order:order._id,
+                            assignedTo:shopOrder.assignedDeliveryBoy
+                 })
+                })().catch(err => console.error("delivery completion cleanup error:", err))
+
         return res.status(200).json({message:"order delivered successfully"})  
     }
     catch(err){

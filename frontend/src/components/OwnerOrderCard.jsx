@@ -65,7 +65,7 @@ const OwnerOrderCard = ({data}) => {
       <div className='flex justify-between items-center mt-auto pt-3 border-t border-gray-100'>
         <span className='text-sm'>status: <span className='font-semibold capitalize text-[#ff4d2d]'>{data?.shopOrders?.status || 'pending'}</span></span>
 
-        <select name="" onChange={(e)=>handleUpdateStatus(data._id , data?.shopOrders?.shop?._id , e.target.value)}  id="" className='rounded-md border px-1
+        <select name="" disabled={data?.shopOrders?.status === "out of delivery" || data?.shopOrders?.status === "delivered"}  onChange={(e)=>handleUpdateStatus(data._id , data?.shopOrders?.shop?._id , e.target.value)}  id="" className='rounded-md border px-1
         text-sm focus:outline-none focus:ring-2 border-[#ff4d2d] text-[#ff4d2d] '>
           <option value="">Change</option>
           <option value="pending">Pending</option>

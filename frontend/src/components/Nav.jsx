@@ -17,7 +17,7 @@ import { useEffect } from 'react';
 
 
 const Nav = () => {
-  const { userData ,currentCity ,cartItems} = useSelector(state => state.user)
+  const { userData ,currentCity ,cartItems, myOrders, availableDeliveryOrders} = useSelector(state => state.user)
    const [show , setShow] = useState(false);
    const [showSearch , setShowSearch] = useState(false);
    const [editCity, setEditCity] = useState(false);
@@ -224,7 +224,7 @@ const Nav = () => {
             <LuReceipt size={20} />
             <span className='' onClick={()=>navigate("/my-orders")}>My Orders</span>
             <span className='absolute -right-2 -top-2 text-xs font-bold text-white
-            bg-[#ff4d2d] rounded-full px-[6px] py-[1px]'>0</span>
+            bg-[#ff4d2d] rounded-full px-[6px] py-[1px]'>{userData?.role === "deliveryBoy" ? availableDeliveryOrders : myOrders?.length || 0}</span>
 
            </div>
 
@@ -233,7 +233,7 @@ const Nav = () => {
             <LuReceipt size={20} />
             
             <span className='absolute -right-2 -top-2 text-xs font-bold text-white
-            bg-[#ff4d2d] rounded-full px-[6px] py-[1px]'>{cartItems.length}</span>
+            bg-[#ff4d2d] rounded-full px-[6px] py-[1px]'>{userData?.role === "deliveryBoy" ? availableDeliveryOrders : myOrders?.length || 0}</span>
 
            </div>
         </>

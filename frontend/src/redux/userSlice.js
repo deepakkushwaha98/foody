@@ -45,6 +45,8 @@ const userSlice = createSlice({
       cartOutletId:persistedCart.cartOutletId,
       cartOutletName:persistedCart.cartOutletName,
         myOrders:[],
+      availableDeliveryOrders:0,
+      deliveryEarnings:0,
         searchItems:null
 
 
@@ -149,6 +151,18 @@ const userSlice = createSlice({
         setMyOrders:(state , action)=>{
          state.myOrders=action.payload
         },
+      setAvailableDeliveryOrders:(state, action)=>{
+       state.availableDeliveryOrders = Math.max(0, Number(action.payload) || 0)
+      },
+      incrementAvailableDeliveryOrders:(state)=>{
+       state.availableDeliveryOrders += 1
+      },
+      decrementAvailableDeliveryOrders:(state)=>{
+       state.availableDeliveryOrders = Math.max(0, state.availableDeliveryOrders - 1)
+      },
+      setDeliveryEarnings:(state, action)=>{
+       state.deliveryEarnings = Math.max(0, Number(action.payload) || 0)
+      },
         addMyOrder:(state , action)=>{
          state.myOrders=[action.payload,...state.myOrders]
         },
@@ -193,5 +207,5 @@ const userSlice = createSlice({
     }
 })
 
-export const {setUserData, openCartDrawer, closeCartDrawer, dismissMultipleOrdersBanner, dismissOneOutletBanner, updateRealTimeOrderStatus, updateOrderStatus ,setSearchItems,setMyOrders,addMyOrder , setCurrentCity, removeCartItem , clearCart, setCartFromServer, setCurrentState , setCurrentAddress , setShopInMyCity , setItemInMyCity, updateQuantity ,addToCart} = userSlice.actions
+export const {setUserData, openCartDrawer, closeCartDrawer, dismissMultipleOrdersBanner, dismissOneOutletBanner, updateRealTimeOrderStatus, updateOrderStatus ,setSearchItems,setMyOrders,addMyOrder , setAvailableDeliveryOrders, incrementAvailableDeliveryOrders, decrementAvailableDeliveryOrders, setDeliveryEarnings, setCurrentCity, removeCartItem , clearCart, setCartFromServer, setCurrentState , setCurrentAddress , setShopInMyCity , setItemInMyCity, updateQuantity ,addToCart} = userSlice.actions
 export default userSlice.reducer

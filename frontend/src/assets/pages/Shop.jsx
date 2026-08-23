@@ -56,7 +56,7 @@ const Shop = () => {
             </div>
 
         </div> }
-                <div className='mx-auto max-w-[1680px] px-4 py-10 sm:px-6 lg:px-8 lg:pr-[420px]'>
+                <div className='mx-auto grid max-w-[1680px] gap-6 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:px-8'>
                     <main className='min-w-0'>
                             <h2 className='flex items-center justify-center gap-3 text-3xl font-bold mb-10 text-gray-800'>
                                     <FaUtensils color='red'/>
@@ -71,10 +71,10 @@ const Shop = () => {
                                     </div>
                             ): <p className='text-center text-gray-500'>No items available</p> }
                     </main>
-        </div>
 
-        <div className='fixed right-6 top-20 z-30 hidden h-[calc(100vh-6rem)] w-[380px] overflow-hidden rounded-[2rem] border border-[#ffd7c8] bg-white/95 p-4 shadow-[0_24px_70px_rgba(255,124,77,0.12)] backdrop-blur lg:block'>
+        <div className='hidden self-start lg:sticky lg:top-6 lg:block lg:h-[calc(100vh-3rem)] lg:max-h-[760px] lg:overflow-hidden rounded-[2rem] border border-[#ffd7c8] bg-white/95 p-4 shadow-[0_24px_70px_rgba(255,124,77,0.12)] backdrop-blur'>
             <CartPanel />
+        </div>
         </div>
       
     </div>

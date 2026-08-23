@@ -3,7 +3,7 @@ import axios from "axios";
 import { serverUrl } from "../App";
 import { useDispatch, useSelector } from "react-redux";
 import { setMyShopLoading } from "../redux/ownerSlice";
-import { setMyOrders } from "../redux/userSlice";
+import { setMyOrders, setDeliveryEarnings } from "../redux/userSlice";
 const useGetMyOrder = ()=>{
 
   const dispatch = useDispatch()
@@ -20,7 +20,11 @@ const useGetMyOrder = ()=>{
           { withCredentials: true }
         );
 
-        dispatch(setMyOrders(result.data))
+        const orders = userData.role === "deliveryBoy" ? result.data.orders || [] : result.data
+        dispatch(setMyOrders(orders))
+        if (userData.role === "deliveryBoy") {
+          dispatch(setDeliveryEarnings(result.data.totalEarnings || 0))
+        }
         
         console.log('get-my order body', result.data);
       } catch (err) {
