@@ -20,6 +20,10 @@ import { socketHandler } from "./socket.js";
 dotenv.config({ path: new URL("./.env", import.meta.url).pathname });
 const app = express()
 
+app.get("/", (req, res) => {
+  res.send("----Foody backend is running successfully----");
+});
+
 const server = http.createServer(app)
 
 const io = new SocketServer(server , {
@@ -31,24 +35,6 @@ const io = new SocketServer(server , {
 })
 
 app.set("io" , io)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 app.use(cors({
     origin: process.env.FRONTEND_URL,
