@@ -48,7 +48,7 @@ const MyOrders = () => {
             <div className='z-[10] ' onClick={()=>navigate("/")}>
                <IoMdArrowBack size={35} className='text-[#ff4d2d] ' />
            </div>
-            <h1 className='text-2xl font-semibold text-start'> My Orders</h1>
+            <h1 className='text-2xl font-semibold text-start'> My Ordered History</h1>
         </div>
 
         {userData?.role === "deliveryBoy" && <div className='mb-6 rounded-xl border border-green-200 bg-green-50 p-5'>
