@@ -4,7 +4,11 @@ import SignIn from "./assets/pages/SignIn";
 import Forgetpasswordd from "./assets/pages/Forgetpasswordd.jsx";
 import useGetCurrentUser from "./hooks/useGetCurrentUser.jsx";
 import { useDispatch, useSelector } from "react-redux";
+<<<<<<< HEAD
 export const serverUrl = import.meta.env.VITE_API_URL || "https://foody-backend-3l58.onrender.com"
+=======
+export const serverUrl = "https://foody-backend-3l58.onrender.com"
+>>>>>>> 00fb34bb26c6e1f64998a25eaa9d9ebb0b08eb52
 import Home from "./assets/pages/Home.jsx"
 import useGetCity from "./hooks/UseGetCity.jsx";
 import useGetMyShop from "./hooks/UseGetMyShop.jsx";
