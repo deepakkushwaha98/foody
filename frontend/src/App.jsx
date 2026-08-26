@@ -4,7 +4,7 @@ import SignIn from "./assets/pages/SignIn";
 import Forgetpasswordd from "./assets/pages/Forgetpasswordd.jsx";
 import useGetCurrentUser from "./hooks/useGetCurrentUser.jsx";
 import { useDispatch, useSelector } from "react-redux";
-export const serverUrl = "http://localhost:3000"
+export const serverUrl = "https://foody-btdj.onrender.com"
 import Home from "./assets/pages/Home.jsx"
 import useGetCity from "./hooks/UseGetCity.jsx";
 import useGetMyShop from "./hooks/UseGetMyShop.jsx";
