@@ -903,9 +903,7 @@ export const sendDeliveryOtp = async(req,res)=>{
 
         await order.save()
 
-        sendDeliveryOtpMail(order.user, otp).catch(err => {
-            console.error("delivery OTP email error:", err)
-        })
+        await sendDeliveryOtpMail(order.user, otp)
         
         return res.status(200).json({message:`OTP sent to successfuly to ${order.user.fullName}`})
 
