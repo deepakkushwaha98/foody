@@ -11,7 +11,7 @@ const deliveryAssignmentSchema = new mongoose.Schema({
     },
     shopOrderId:{
         type:mongoose.Schema.Types.ObjectId,
-        require:true
+        required:true
 
     },
     broadcastedTo:[{

@@ -23,7 +23,7 @@ export const addItem = async (req,res) =>{
         await shop.populate("owner")
         await shop.populate({
             path:"items",
-            option:{sort:{updateAt:-1}}
+            options:{sort:{updatedAt:-1}}
          })
 
         return res.status(201).json(shop)

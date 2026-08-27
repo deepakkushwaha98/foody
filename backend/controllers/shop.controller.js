@@ -48,7 +48,7 @@ export const getMyShop = async(req, res) =>{
         console.log('getMyShop result count:', Array.isArray(shop)? shop.length : 0)
         // ensure we always send a JSON response; convert null/undefined to []
         if(!shop || (Array.isArray(shop) && shop.length === 0)){
-            return res.status(200).json([])
+            return res.status(400).json([])
         }
         return res.status(200).json(shop)
 
