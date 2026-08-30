@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 
 const OwnerOrderCard = ({data}) => {
   const dispatch = useDispatch();
+  const customer = data?.user;
 
   const [availableBoys , setAvailableBoys] = useState([]);
   const [assignedDeliveryBoy, setAssignedDeliveryBoy] = useState(data?.shopOrders?.assignedDeliveryBoy || null);
@@ -36,9 +37,9 @@ const OwnerOrderCard = ({data}) => {
   return (
     <div className='bg-white rounded-lg shadow p-4 space-y-4'>
       <div>
-        <h2 className='text-lg font-semibold'>{data.user.fullName}</h2>
-        <p className='text-sm text-gray-500'>{data.user.email} </p>
-        <p className='flex items-center gap-2 text-sm'><span><FaPhoneAlt /> </span>{data.user.mobile}</p>
+        <h2 className='text-lg font-semibold'>{customer?.fullName || 'Customer unavailable'}</h2>
+        <p className='text-sm text-gray-500'>{customer?.email || 'No email available'} </p>
+        <p className='flex items-center gap-2 text-sm'><span><FaPhoneAlt /> </span>{customer?.mobile || 'No phone available'}</p>
 
 
       </div>
